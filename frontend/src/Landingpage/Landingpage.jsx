@@ -8,7 +8,7 @@ function Landingpage() {
       {/* NAVBAR */}
       <nav className="navbar">
         <div className="nav-left">
-          <h2 style={{color:'#f7f5f5'}} className="app-name">HelpUp</h2>
+          <img src="/HelpUpLogo2.png" alt="HelpUp Logo" style={{height: '60px', width: 'auto'}} />
         </div>
         <div className="nav-center">
           <a href="#drive">Drive</a>
@@ -20,12 +20,11 @@ function Landingpage() {
       {/* HERO SECTION */}
       <section className="hero">
         <div className="hero-text">
-          <h1>
-            Help<span>Up</span>
-          </h1>
+          <div style={{marginTop: '-50px'}}>
+            <img src="/Help.png" alt="HelpUp Name" style={{maxWidth: '60%', height: 'auto'}} />
+          </div>
           <p>
-            HelpUp is an all-in-one donation drive management system designed to connect people who care with causes that matter. Our platform empowers organizations, schools, and communities to organize, promote, and manage donation drives with ease — whether it’s for clothes, food, school supplies, or disaster relief.
-          </p>
+            HelpUp is a donation drive platform dedicated to supporting fire victims. We make it easy for schools, organizations, and communities to organize and manage fundraising drives, ensuring that every contribution helps provide immediate relief, essentials, and support for those affected by fires. Every donation brings hope and rebuilds lives.          </p>
           <div className="nav-right">
             <br></br>
           <button className="register-btn">Register</button>

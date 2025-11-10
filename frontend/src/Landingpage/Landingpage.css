@@ -86,7 +86,8 @@ h4 {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 120px;
+  padding: 200px 120px;
+  min-height: 100vh;
   background: url('/public/images/fire_landing_bg 2.jpg') center/cover no-repeat;
   filter: brightness(100%) contrast(110%);
   background-position: center;
@@ -104,6 +105,7 @@ h4 {
 
 .hero-text p {
   font-size: 1.5em;
+  margin-top: 10px;
 }
 
 .hero-text h1 span {
@@ -485,4 +487,3 @@ footer {
   font-size: 14px;
   color: #b6b1b2;
 }
-
