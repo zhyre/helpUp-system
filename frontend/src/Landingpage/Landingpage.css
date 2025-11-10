@@ -1,0 +1,581 @@
+/* GLOBAL */
+.landing-container {
+  font-family: "Poppins", sans-serif;
+  color: #624d41;
+  background-color: #242121;
+  font-size: 18px;
+}
+
+h1, h2, h3, h4 {
+  margin: 0;
+  font-size: 2.5em;
+}
+
+h1 {
+  font-size: 3em;
+}
+
+h2 {
+  font-size: 2.2em;
+}
+
+h3 {
+  font-size: 1.8em;
+}
+
+h4 {
+  font-size: 1.5em;
+}
+
+/* NAVBAR */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 60px;
+  background-color: #a50805;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.nav-center a {
+  margin: 0 15px;
+  text-decoration: none;
+  color: #f7f5f5;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.nav-center a:hover {
+  color: #a50805;
+}
+
+.register-btn,
+.donate-btn {
+  border: none;
+  padding: 15px 25px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1.2em;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.register-btn {
+  background: linear-gradient(45deg, #faf8f6, #e8e6e4);
+  color: #a50805;
+}
+
+.register-btn:hover {
+  background: linear-gradient(45deg, #e8e6e4, #faf8f6);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.donate-btn {
+  background: linear-gradient(45deg, #a50805, #d32f2f);
+  color: #f2eff0;
+  margin-left: 10px;
+}
+
+.donate-btn:hover {
+  background: linear-gradient(45deg, #d32f2f, #a50805);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(165, 8, 5, 0.4);
+}
+
+.register-btn:active,
+.donate-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* HERO */
+.hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 200px 120px;
+  min-height: 100vh;
+  background: url('/public/images/fire_landing_bg 2.jpg') center/cover no-repeat;
+  filter: brightness(100%) contrast(110%);
+  background-position: center;
+}
+
+.hero-text {
+  flex: 1;
+  margin-right: 50px;
+  color: #ffffff;
+}
+
+.hero-text h1 {
+  font-size: 4em;
+}
+
+.hero-text p {
+  font-size: 1.5em;
+  margin-top: 10px;
+}
+
+.hero-text h1 span {
+  color: #a50805;
+}
+
+.hero-cards {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  gap: 20px;
+  padding: 20px 0;
+  max-width: 600px;
+  scroll-behavior: smooth;
+}
+
+.hero-cards::-webkit-scrollbar {
+  display: none; /* hides scrollbar for cleaner look */
+}
+
+.hero-card-wrapper {
+  flex: 0 0 100%;
+  scroll-snap-align: center;
+  display: flex;
+  justify-content: center;
+}
+
+.hero-card-wrapper .donation-card {
+  width: 280px; /* same as regular DonationCard */
+}
+
+/* Optional: show 2 cards on wider screens */
+@media (min-width: 900px) {
+  .hero-card-wrapper {
+    flex: 0 0 50%;
+  }
+}
+
+.donation-card {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f8f8 100%);
+  border-radius: 16px;
+  padding: 15px;
+  width: 350px;
+  overflow: hidden;
+  transition: all 0.4s ease;
+  cursor: pointer;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  position: relative;
+}
+
+.donation-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  border-color: rgba(165, 8, 5, 0.3);
+}
+
+.card-content {
+  padding: 10px 15px 15px 15px;
+  text-align: left;
+}
+
+
+.hero-cards .donation-card {
+  width: 380px;
+  padding: 25px;
+  font-size: 1.1em;
+  text-align: center;
+}
+
+.hero-cards .donation-card.small {
+  width: 220px;
+  padding: 20px;
+  font-size: 1em;
+}
+
+.donation-card .price {
+  font-size: 1.2em;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.donation-card .org-name {
+  font-size: 1em;
+  color: #b56547;
+  margin-bottom: 5px;
+}
+
+.donation-card .donation-name {
+  font-size: 1.1em;
+  margin: 5px 0;
+}
+
+.donation-card .desc {
+  font-size: 0.9em;
+  color: #624d41;
+  margin-bottom: 10px;
+}
+
+.donation-card.small {
+  width: 220px;
+}
+
+.image-placeholder {
+  width: 100%;
+  height: 160px;
+  background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
+  border-radius: 12px;
+  margin-bottom: 15px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress {
+  height: 8px;
+  background: linear-gradient(90deg, #a50805 0%, #d32f2f 50%, #8b8580 50%);
+  border-radius: 6px;
+  margin: 12px 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.progress::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 60%;
+  background: linear-gradient(90deg, #a50805, #d32f2f);
+  border-radius: 6px;
+  animation: progress-fill 2s ease-in-out infinite;
+}
+
+@keyframes progress-fill {
+  0% { width: 0%; }
+  50% { width: 60%; }
+  100% { width: 60%; }
+}
+
+.donation-card button {
+  background: linear-gradient(45deg, #a50805, #d32f2f);
+  color: #f5f5f5;
+  border: none;
+  border-radius: 8px;
+  padding: 14px 24px;
+  cursor: pointer;
+  font-size: 1.1em;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  width: 100%;
+  margin-top: 15px;
+  box-shadow: 0 4px 12px rgba(165, 8, 5, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.donation-card button:hover {
+  background: linear-gradient(45deg, #d32f2f, #a50805);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(165, 8, 5, 0.4);
+}
+
+.donation-card button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(165, 8, 5, 0.3);
+}
+
+/* SUPPORT SECTION */
+.support {
+  padding: 80px;
+  text-align: center;
+  background-color: #110c09;
+}
+
+.support h2 {
+  margin-bottom: 40px;
+  color: #f7f5f5;
+}
+
+.support-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  justify-items: center;
+}
+
+/* ABOUT & CONTACT */
+.about, .contact {
+  text-align: center;
+  padding: 100px 80px;
+  color: #eae9e8;
+  background: linear-gradient(135deg, #716d6a 0%, #5a5552 100%);
+  margin-top: 40px;
+  position: relative;
+  overflow: hidden;
+}
+
+.about::before, .contact::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 20% 80%, rgba(165, 8, 5, 0.1) 0%, transparent 50%),
+              radial-gradient(circle at 80% 20%, rgba(211, 47, 47, 0.1) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.about h3 {
+  color: #0f0f0f;
+}
+
+.about-content {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.about-text {
+  text-align: center;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.about-text h3 {
+  margin-bottom: 30px;
+  font-size: 2.5em;
+  color: #f7f5f5;
+}
+
+.about-text p {
+  margin-bottom: 20px;
+  line-height: 1.8;
+  font-size: 1.1em;
+}
+
+.about-stats {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  margin-top: 60px;
+  position: relative;
+}
+
+.stat-item {
+  text-align: center;
+  padding: 40px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.4s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-item:hover {
+  transform: translateY(-8px) scale(1.05);
+  box-shadow: 0 20px 40px rgba(165, 8, 5, 0.2);
+  border-color: rgba(165, 8, 5, 0.3);
+}
+
+.stat-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(165, 8, 5, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.stat-item:hover::before {
+  left: 100%;
+}
+
+.stat-number {
+  font-size: 2.5em;
+  font-weight: bold;
+  color: #a50805;
+  margin-bottom: 10px;
+}
+
+.stat-label {
+  font-size: 1em;
+  color: #f7f5f5;
+  font-weight: 500;
+}
+
+.contact h3 {
+  margin-bottom: 40px;
+  color: #f7f5f5;
+}
+
+/* CONTACT FORM STYLES */
+.contact-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  max-width: 1200px;
+  margin: 0 auto;
+  gap: 60px;
+}
+
+.contact-info {
+  flex: 1;
+  text-align: left;
+}
+
+.contact-info p {
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+.contact-details {
+  margin: 20px 0;
+}
+
+.contact-item {
+  margin-bottom: 10px;
+  font-size: 1.1em;
+  line-height: 1.5;
+}
+
+.social-links {
+  margin-top: 20px;
+}
+
+.social-link {
+  display: inline-block;
+  margin-right: 20px;
+  color: #a50805;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.social-link:hover {
+  color: #f7f5f5;
+}
+
+.contact-form {
+  flex: 1;
+  max-width: 400px;
+}
+
+.contact-form-element {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #8b8580;
+  border-radius: 8px;
+  font-size: 1em;
+  background-color: #f7f5f5;
+  color: #301d14;
+  transition: border-color 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #a50805;
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+
+
+.contact-submit-btn {
+  background: linear-gradient(45deg, #a50805, #d32f2f);
+  color: #f7f5f5;
+  border: none;
+  padding: 16px 32px;
+  border-radius: 10px;
+  font-size: 1.1em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  align-self: flex-start;
+  box-shadow: 0 4px 12px rgba(165, 8, 5, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.contact-submit-btn:hover {
+  background: linear-gradient(45deg, #d32f2f, #a50805);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(165, 8, 5, 0.4);
+}
+
+.contact-submit-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(165, 8, 5, 0.3);
+}
+
+@media (max-width: 768px) {
+  .contact-content {
+    flex-direction: column;
+    gap: 40px;
+  }
+
+  .contact-info {
+    text-align: center;
+  }
+
+  .social-links {
+    text-align: center;
+  }
+
+  .social-link {
+    margin: 0 10px;
+  }
+
+  .contact-submit-btn {
+    align-self: center;
+  }
+
+  .about-content {
+    /* No longer needed since we removed flex */
+  }
+
+  .about-text {
+    text-align: center;
+  }
+
+  .about-stats {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .stat-item {
+    padding: 20px;
+  }
+
+  .stat-number {
+    font-size: 2em;
+  }
+}
+
+/* FOOTER */
+footer {
+  text-align: center;
+  padding: 20px;
+  background-color: #301d14;
+  font-size: 14px;
+  color: #b6b1b2;
+}
