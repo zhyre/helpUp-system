@@ -147,7 +147,8 @@ h4 {
 .donation-card {
   background: #eae9e8;
   border-radius: 12px;
-  width: 280px;
+  padding: 10px;
+  width: 350px;
   overflow: hidden;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   cursor: pointer;
@@ -163,8 +164,9 @@ h4 {
   text-align: left;
 }
 
+
 .hero-cards .donation-card {
-  width: 280px;
+  width: 380px;
   padding: 25px;
   font-size: 1.1em;
   text-align: center;

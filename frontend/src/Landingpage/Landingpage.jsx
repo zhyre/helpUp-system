@@ -50,7 +50,7 @@ function Landingpage() {
 
       {/* SUPPORT SECTION */}
       <section className="support">
-        <h2>SEND YOUR DONATIONS</h2>
+        <strong><h2>SEND YOUR DONATIONS</h2></strong>
         <div className="support-grid">
           {[...Array(8)].map((_, index) => (
             <DonationCard
@@ -69,7 +69,7 @@ function Landingpage() {
       <section id="about" className="about">
         <div className="about-content">
           <div className="about-text">
-            <h3>About Us</h3>
+            <strong><h3>About Us</h3></strong>
             <p>
               HelpUp is a digital platform built to empower communities, schools, and organizations to create meaningful change. We make it easy to start, manage, and promote donation drives — whether they're for disaster relief, education, food aid, or community development.
             </p>
@@ -97,7 +97,7 @@ function Landingpage() {
 
       {/* CONTACT SECTION */}
       <section id="contact" className="contact">
-        <h3>Contact Us</h3>
+        <strong><h3>Contact Us</h3></strong>
         <div className="contact-content">
           <div className="contact-info">
             <p>
