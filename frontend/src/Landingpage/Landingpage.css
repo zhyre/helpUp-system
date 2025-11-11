@@ -33,14 +33,14 @@ h4 {
   justify-content: space-between;
   align-items: center;
   padding: 15px 60px;
-  background-color: #a50805;
+  background-color: #f9f6f6;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .nav-center a {
   margin: 0 15px;
   text-decoration: none;
-  color: #f7f5f5;
+  color: #1d1b1b;
   font-weight: 500;
   transition: color 0.3s ease;
 }

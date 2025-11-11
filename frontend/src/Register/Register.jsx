@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "./Register.css";
 
-const Register = ({ onClose }) => {
+const Register = ({ onClose, onSwitchToLogin }) => {
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -111,6 +111,10 @@ const Register = ({ onClose }) => {
 
 
           <button type="submit" className="submit-btn">Register</button>
+
+          <div className="form-footer">
+            <p>Already have an account? <a href="#" onClick={(e) => { e.preventDefault(); onSwitchToLogin(); }}>Sign In</a></p>
+          </div>
         </form>
       </div>
     </div>

@@ -2,13 +2,29 @@ import React, { useState } from "react";
 import "./Landingpage.css";
 import DonationCard from "../components/DonationCard";
 import Register from "../Register/Register"; // make sure this path matches your project structure
+import Login from "../Login/Login";
 import "../Register/Register.css"; // modal + form styling
+import "../Login/Login.css";
 
 function Landingpage() {
   const [showRegister, setShowRegister] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
 
   const handleOpenRegister = () => setShowRegister(true);
   const handleCloseRegister = () => setShowRegister(false);
+
+  const handleOpenLogin = () => setShowLogin(true);
+  const handleCloseLogin = () => setShowLogin(false);
+
+  const handleSwitchToRegister = () => {
+    setShowLogin(false);
+    setShowRegister(true);
+  };
+
+  const handleSwitchToLogin = () => {
+    setShowRegister(false);
+    setShowLogin(true);
+  };
 
   return (
     <div className="landing-container">
@@ -223,7 +239,22 @@ function Landingpage() {
             <button className="modal-close" onClick={handleCloseRegister}>
               &times;
             </button>
-            <Register onClose={handleCloseRegister} />
+            <Register onClose={handleCloseRegister} onSwitchToLogin={handleSwitchToLogin} />
+          </div>
+        </div>
+      )}
+
+      {/* LOGIN MODAL */}
+      {showLogin && (
+        <div className="modal-overlay" onClick={handleCloseLogin}>
+          <div
+            className="modal-content"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button className="modal-close" onClick={handleCloseLogin}>
+              &times;
+            </button>
+            <Login onClose={handleCloseLogin} onSwitchToRegister={handleSwitchToRegister} />
           </div>
         </div>
       )}
