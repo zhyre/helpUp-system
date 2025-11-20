@@ -1,15 +1,12 @@
 import React, { useState } from "react";
-import UserData, { useUser } from "../components/UserData";
 import "./Login.css";
 
-const Login = ({ onClose, onSwitchToRegister }) => {
-  const { login } = UserData();
+const Login = ({ onClose, onSwitchToRegister, onLogin }) => {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -17,29 +14,22 @@ const Login = ({ onClose, onSwitchToRegister }) => {
       ...prev,
       [name]: value
     }));
-    if (error) setError("");
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setError("");
+    console.log('Login handleSubmit called');
 
-    try {
-      const result = await login(formData.email, formData.password);
-
-      if (result.success) {
-        alert("Login successful! Welcome back.");
-        onClose();
-      } else {
-        setError(result.error || "Login failed. Please check your credentials.");
+    // Simulate login delay
+    setTimeout(() => {
+      console.log('Login timeout, calling onClose and onLogin');
+      onClose();
+      if (onLogin) {
+        onLogin();
       }
-    } catch (error) {
-      console.error("Login error:", error);
-      setError("Network error. Please try again.");
-    } finally {
       setIsLoading(false);
-    }
+    }, 500);
   };
 
   return (
@@ -49,17 +39,6 @@ const Login = ({ onClose, onSwitchToRegister }) => {
         <h3 className="modal-title">Welcome Back</h3>
 
         <form onSubmit={handleSubmit} className="login-form">
-          {error && (
-            <div className="error-message" style={{
-              color: '#e74c3c',
-              textAlign: 'center',
-              marginBottom: '1rem',
-              fontSize: '0.9rem'
-            }}>
-              {error}
-            </div>
-          )}
-
           <div className="form-group">
             <label>Email Address</label>
             <input

@@ -1,13 +1,35 @@
-// import logo from './logo.svg'; // We removed the logo, so this isn't needed
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import Landingpage from './Landingpage/Landingpage';
+import Homepage from './Homepage/Homepage';
+import ProfilePage from './ProfilePage/ProfilePage';
+import SettingsPage from './SettingsPage/SettingsPage';
 import './App.css';
+
+function AppContent() {
+  const navigate = useNavigate();
+
+  const handleLogin = () => {
+    navigate('/homepage');
+  };
+
+  return (
+    <Routes>
+      <Route path="/" element={<Landingpage onLogin={handleLogin} />} />
+      <Route path="/homepage" element={<Homepage />} />
+      <Route path="/profile" element={<ProfilePage />} />
+      <Route path="/settings" element={<SettingsPage />} />
+    </Routes>
+  );
+}
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <h1>ate natanggal...</h1>
-      </header>
-    </div>
+    <Router>
+      <div className="App">
+        <AppContent />
+      </div>
+    </Router>
   );
 }
 

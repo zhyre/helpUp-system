@@ -6,7 +6,7 @@ import Login from "../Login/Login";
 import "../Register/Register.css"; // modal + form styling
 import "../Login/Login.css";
 
-function Landingpage() {
+function Landingpage({ onLogin }) {
   const [showRegister, setShowRegister] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
 
@@ -91,7 +91,7 @@ function Landingpage() {
       </section>
 
       {/* SUPPORT SECTION */}
-      <section className="support">
+      <section id="drive" className="support">
         <strong>
           <h2>SEND YOUR DONATIONS</h2>
         </strong>
@@ -254,7 +254,7 @@ function Landingpage() {
             <button className="modal-close" onClick={handleCloseLogin}>
               &times;
             </button>
-            <Login onClose={handleCloseLogin} onSwitchToRegister={handleSwitchToRegister} />
+            <Login onClose={handleCloseLogin} onSwitchToRegister={handleSwitchToRegister} onLogin={onLogin} />
           </div>
         </div>
       )}
