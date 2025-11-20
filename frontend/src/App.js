@@ -4,6 +4,7 @@ import Landingpage from './Landingpage/Landingpage';
 import Homepage from './Homepage/Homepage';
 import ProfilePage from './ProfilePage/ProfilePage';
 import SettingsPage from './SettingsPage/SettingsPage';
+import GlobalDonationPage from './GlobalDonationPage/GlobalDonationPage';
 import './App.css';
 
 function AppContent() {
@@ -17,6 +18,7 @@ function AppContent() {
     <Routes>
       <Route path="/" element={<Landingpage onLogin={handleLogin} />} />
       <Route path="/homepage" element={<Homepage />} />
+      <Route path="/global-donations" element={<GlobalDonationPage />} />
       <Route path="/profile" element={<ProfilePage />} />
       <Route path="/settings" element={<SettingsPage />} />
     </Routes>
