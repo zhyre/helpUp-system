@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import "./Register.css";
 
 const Register = ({ onClose, onSwitchToLogin }) => {
   const [formData, setFormData] = useState({
@@ -11,6 +10,7 @@ const Register = ({ onClose, onSwitchToLogin }) => {
     confirmPassword: "",
     role: "DONOR",
   });
+
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
@@ -18,7 +18,7 @@ const Register = ({ onClose, onSwitchToLogin }) => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
-    // Clear error on change
+
     if (errors[name]) {
       setErrors({ ...errors, [name]: "" });
     }
@@ -29,168 +29,213 @@ const Register = ({ onClose, onSwitchToLogin }) => {
     if (!formData.firstName.trim()) newErrors.firstName = "First name is required";
     if (!formData.lastName.trim()) newErrors.lastName = "Last name is required";
     if (!formData.email.trim()) newErrors.email = "Email is required";
-    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = "Email is invalid";
+    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = "Invalid email";
     if (!formData.password) newErrors.password = "Password is required";
-    else if (formData.password.length < 6) newErrors.password = "Password must be at least 6 characters";
-    if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = "Passwords do not match";
+    else if (formData.password.length < 6)
+      newErrors.password = "Password must be at least 6 characters";
+    if (formData.password !== formData.confirmPassword)
+      newErrors.confirmPassword = "Passwords do not match";
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
+  // --- Submit handler ---
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setSuccessMessage("");
     setErrors({});
+    setSuccessMessage("");
 
     if (!validateForm()) return;
-
     setIsLoading(true);
-
-    console.log("Submitting form data:", formData);
 
     try {
       const response = await fetch("http://localhost:8080/api/users/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Accept": "application/json"
+          Accept: "application/json",
         },
-        body: JSON.stringify({
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          email: formData.email,
-          contactNumber: formData.contactNumber,
-          password: formData.password,
-          role: formData.role,
-        }),
+        body: JSON.stringify(formData),
       });
-
-      console.log("Response status:", response.status);
-      console.log("Response:", response);
 
       if (response.ok) {
         setSuccessMessage("User registered successfully!");
-        setTimeout(() => onClose(), 2000);
+        setTimeout(() => onClose(), 1500);
       } else {
-        const errorText = await response.text();
-        console.error("Registration failed:", errorText);
-        setErrors({ general: "Failed to register. Please check your inputs." });
+        setErrors({ general: "Registration failed." });
       }
-    } catch (error) {
-      console.error("Error registering user:", error);
-      setErrors({ general: "Network error. Please try again." });
+    } catch {
+      setErrors({ general: "Network error. Try again later." });
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-content">
-        <button className="modal-close" onClick={onClose}>&times;</button>
-        <h3 className="modal-title">Create your Account</h3>
-        <form onSubmit={handleSubmit} className="register-form">
-          <div className="form-group">
-            <label htmlFor="firstName">First Name</label>
-            <input
-              type="text"
-              id="firstName"
-              name="firstName"
-              value={formData.firstName}
-              onChange={handleChange}
-              required
-              placeholder="Enter your first name"
-              aria-describedby={errors.firstName ? "firstName-error" : undefined}
-            />
-            {errors.firstName && <span id="firstName-error" className="error-message">{errors.firstName}</span>}
-          </div>
+    <>
+      {/* BACKDROP */}
+      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex justify-center items-center">
 
-          <div className="form-group">
-            <label htmlFor="lastName">Last Name</label>
-            <input
-              type="text"
-              id="lastName"
-              name="lastName"
-              value={formData.lastName}
-              onChange={handleChange}
-              required
-              placeholder="Enter your last name"
-              aria-describedby={errors.lastName ? "lastName-error" : undefined}
-            />
-            {errors.lastName && <span id="lastName-error" className="error-message">{errors.lastName}</span>}
-          </div>
+        {/* MODAL */}
+        <div className="bg-white p-8 rounded-2xl shadow-xl w-[95%] max-w-3xl relative">
 
-          <div className="form-group">
-            <label htmlFor="email">Email</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              placeholder="Enter your email address"
-              aria-describedby={errors.email ? "email-error" : undefined}
-            />
-            {errors.email && <span id="email-error" className="error-message">{errors.email}</span>}
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="contactNumber">Contact Number</label>
-            <input
-              type="tel"
-              id="contactNumber"
-              name="contactNumber"
-              value={formData.contactNumber}
-              onChange={handleChange}
-              placeholder="Enter your contact number"
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="password">Password</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-              placeholder="Enter your password"
-              aria-describedby={errors.password ? "password-error" : undefined}
-            />
-            {errors.password && <span id="password-error" className="error-message">{errors.password}</span>}
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="confirmPassword">Confirm Password</label>
-            <input
-              type="password"
-              id="confirmPassword"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              required
-              placeholder="Confirm your password"
-              aria-describedby={errors.confirmPassword ? "confirmPassword-error" : undefined}
-            />
-            {errors.confirmPassword && <span id="confirmPassword-error" className="error-message">{errors.confirmPassword}</span>}
-          </div>
-
-
-          {errors.general && <div className="error-message general-error">{errors.general}</div>}
-          {successMessage && <div className="success-message">{successMessage}</div>}
-
-          <button type="submit" className="submit-btn" disabled={isLoading}>
-            {isLoading ? "Registering..." : "Register"}
+          {/* CLOSE BUTTON */}
+          <button
+            onClick={onClose}
+            className="absolute top-3 right-3 text-gray-600 hover:text-red-600 text-2xl"
+          >
+            &times;
           </button>
 
-          <div className="form-footer">
-            <p>Already have an account? <a href="#" onClick={(e) => { e.preventDefault(); onSwitchToLogin(); }}>Sign In</a></p>
-          </div>
-        </form>
+          {/* TITLE */}
+          <h2 className="text-2xl font-bold text-center text-gray-800 mb-8">
+            Create your Account
+          </h2>
+
+          {/* FORM */}
+          <form onSubmit={handleSubmit}>
+
+            {/* TWO COLUMN LAYOUT */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+              {/* LEFT COLUMN */}
+              <div className="flex flex-col gap-4">
+
+                {/* FIRST NAME */}
+                <div>
+                  <label className="text-gray-700 font-medium">First name:</label>
+                  <input
+                    type="text"
+                    name="firstName"
+                    value={formData.firstName}
+                    onChange={handleChange}
+                    className="w-full border px-3 py-2 rounded-md focus:outline-red-600"
+                    placeholder="Enter first name"
+                  />
+                  {errors.firstName && (
+                    <p className="text-red-600 text-sm">{errors.firstName}</p>
+                  )}
+                </div>
+
+                {/* EMAIL */}
+                <div>
+                  <label className="text-gray-700 font-medium">Email Id:</label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    className="w-full border px-3 py-2 rounded-md focus:outline-red-600"
+                    placeholder="Enter email"
+                  />
+                  {errors.email && (
+                    <p className="text-red-600 text-sm">{errors.email}</p>
+                  )}
+                </div>
+
+                {/* PASSWORD */}
+                <div>
+                  <label className="text-gray-700 font-medium">Password:</label>
+                  <input
+                    type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    className="w-full border px-3 py-2 rounded-md focus:outline-red-600"
+                    placeholder="Enter password"
+                  />
+                  {errors.password && (
+                    <p className="text-red-600 text-sm">{errors.password}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* RIGHT COLUMN */}
+              <div className="flex flex-col gap-4">
+
+                {/* LAST NAME */}
+                <div>
+                  <label className="text-gray-700 font-medium">Last name:</label>
+                  <input
+                    type="text"
+                    name="lastName"
+                    value={formData.lastName}
+                    onChange={handleChange}
+                    className="w-full border px-3 py-2 rounded-md focus:outline-red-600"
+                    placeholder="Enter last name"
+                  />
+                  {errors.lastName && (
+                    <p className="text-red-600 text-sm">{errors.lastName}</p>
+                  )}
+                </div>
+
+                {/* CONTACT NUMBER */}
+                <div>
+                  <label className="text-gray-700 font-medium">Mobile No.:</label>
+                  <input
+                    type="text"
+                    name="contactNumber"
+                    value={formData.contactNumber}
+                    onChange={handleChange}
+                    className="w-full border px-3 py-2 rounded-md focus:outline-red-600"
+                    placeholder="Enter mobile number"
+                  />
+                </div>
+
+                {/* CONFIRM PASSWORD */}
+                <div>
+                  <label className="text-gray-700 font-medium">Confirm Password:</label>
+                  <input
+                    type="password"
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    className="w-full border px-3 py-2 rounded-md focus:outline-red-600"
+                    placeholder="Re-enter password"
+                  />
+                  {errors.confirmPassword && (
+                    <p className="text-red-600 text-sm">{errors.confirmPassword}</p>
+                  )}
+                </div>
+
+              </div>
+            </div>
+
+            {/* GENERAL ERROR */}
+            {errors.general && (
+              <p className="text-red-600 text-center mt-4">{errors.general}</p>
+            )}
+
+            {/* SUCCESS MESSAGE */}
+            {successMessage && (
+              <p className="text-green-600 text-center mt-4">{successMessage}</p>
+            )}
+
+            {/* SUBMIT BUTTON */}
+            <button
+              type="submit"
+              className="mt-8 w-full bg-gray-700 hover:bg-gray-800 text-white py-3 rounded-lg font-semibold transition"
+              disabled={isLoading}
+            >
+              {isLoading ? "Signing up..." : "Sign up"}
+            </button>
+
+            {/* SWITCH TO LOGIN */}
+            <p className="text-center mt-4">
+              Already have an account?{" "}
+              <button
+                onClick={onSwitchToLogin}
+                className="text-red-600 font-semibold hover:underline"
+              >
+                Sign In
+              </button>
+            </p>
+          </form>
+
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

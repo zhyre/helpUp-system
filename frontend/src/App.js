@@ -5,6 +5,8 @@ import Homepage from './Homepage/Homepage';
 import ProfilePage from './ProfilePage/ProfilePage';
 import SettingsPage from './SettingsPage/SettingsPage';
 import GlobalDonationPage from './GlobalDonationPage/GlobalDonationPage';
+import Donation from "./DonationPage/Donation";
+
 import './App.css';
 
 function AppContent() {
@@ -21,6 +23,8 @@ function AppContent() {
       <Route path="/global-donations" element={<GlobalDonationPage />} />
       <Route path="/profile" element={<ProfilePage />} />
       <Route path="/settings" element={<SettingsPage />} />
+      <Route path="/donation/:id" element={<Donation />} />
+
     </Routes>
   );
 }
