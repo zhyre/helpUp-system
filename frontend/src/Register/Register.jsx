@@ -104,7 +104,6 @@ const Register = ({ onClose, onSwitchToLogin }) => {
 
                 {/* FIRST NAME */}
                 <div>
-                  <label className="text-gray-700 font-medium">First name:</label>
                   <input
                     type="text"
                     name="firstName"
@@ -120,7 +119,7 @@ const Register = ({ onClose, onSwitchToLogin }) => {
 
                 {/* EMAIL */}
                 <div>
-                  <label className="text-gray-700 font-medium">Email Id:</label>
+       
                   <input
                     type="email"
                     name="email"
@@ -136,7 +135,7 @@ const Register = ({ onClose, onSwitchToLogin }) => {
 
                 {/* PASSWORD */}
                 <div>
-                  <label className="text-gray-700 font-medium">Password:</label>
+                
                   <input
                     type="password"
                     name="password"
@@ -156,7 +155,7 @@ const Register = ({ onClose, onSwitchToLogin }) => {
 
                 {/* LAST NAME */}
                 <div>
-                  <label className="text-gray-700 font-medium">Last name:</label>
+                 
                   <input
                     type="text"
                     name="lastName"
@@ -172,7 +171,7 @@ const Register = ({ onClose, onSwitchToLogin }) => {
 
                 {/* CONTACT NUMBER */}
                 <div>
-                  <label className="text-gray-700 font-medium">Mobile No.:</label>
+             
                   <input
                     type="text"
                     name="contactNumber"
@@ -185,7 +184,7 @@ const Register = ({ onClose, onSwitchToLogin }) => {
 
                 {/* CONFIRM PASSWORD */}
                 <div>
-                  <label className="text-gray-700 font-medium">Confirm Password:</label>
+                
                   <input
                     type="password"
                     name="confirmPassword"
@@ -215,7 +214,7 @@ const Register = ({ onClose, onSwitchToLogin }) => {
             {/* SUBMIT BUTTON */}
             <button
               type="submit"
-              className="mt-8 w-full bg-gray-700 hover:bg-gray-800 text-white py-3 rounded-lg font-semibold transition"
+              className="mt-8 w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-lg font-semibold transition"
               disabled={isLoading}
             >
               {isLoading ? "Signing up..." : "Sign up"}
