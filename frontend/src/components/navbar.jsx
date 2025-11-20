@@ -97,11 +97,39 @@ export default function Sidebar({ onNavigate, currentPage = "Home" }) {
           border-radius: 20px;
           padding: 24px 0;
           font-family: "Poppins", sans-serif;
-          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+          box-shadow:
+            0 20px 40px rgba(0, 0, 0, 0.1),
+            0 0 30px rgba(165, 8, 5, 0.1),
+            0 0 60px rgba(165, 8, 5, 0.05);
           border: 1px solid #e9ecef;
           backdrop-filter: blur(10px);
           position: relative;
           overflow: hidden;
+          animation: float 6s ease-in-out infinite, glow 4s ease-in-out infinite alternate;
+        }
+
+        @keyframes float {
+          0%, 100% {
+            transform: translateY(0px);
+          }
+          50% {
+            transform: translateY(-10px);
+          }
+        }
+
+        @keyframes glow {
+          0% {
+            box-shadow:
+              0 20px 40px rgba(0, 0, 0, 0.1),
+              0 0 30px rgba(165, 8, 5, 0.1),
+              0 0 60px rgba(165, 8, 5, 0.05);
+          }
+          100% {
+            box-shadow:
+              0 20px 40px rgba(0, 0, 0, 0.1),
+              0 0 40px rgba(165, 8, 5, 0.15),
+              0 0 80px rgba(165, 8, 5, 0.08);
+          }
         }
 
         .sidebar::before {
@@ -136,8 +164,8 @@ export default function Sidebar({ onNavigate, currentPage = "Home" }) {
         .nav-item:hover {
           background: linear-gradient(135deg, #ffebee 0%, #fce4ec 100%);
           color: #d32f2f;
-          transform: translateX(6px) scale(1.02);
-          box-shadow: 0 8px 25px rgba(211, 47, 47, 0.15);
+          transform: translateX(6px) scale(1.02) translateY(-2px);
+          box-shadow: 0 12px 35px rgba(211, 47, 47, 0.2);
         }
 
         .nav-item:focus {
