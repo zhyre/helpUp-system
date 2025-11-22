@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const AuthContext = createContext();
 
@@ -12,18 +12,29 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const login = () => {
-    console.log('AuthContext login called');
+  useEffect(() => {
+    // Simulate checking for existing session or just set loading to false
+    setIsLoading(false);
+  }, []);
+
+  const login = (userData) => {
+    console.log('AuthContext login called with user:', userData);
     setIsLoggedIn(true);
+    setUser(userData);
   };
 
   const logout = () => {
     setIsLoggedIn(false);
+    setUser(null);
   };
 
   const value = {
     isLoggedIn,
+    user,
+    isLoading,
     login,
     logout,
   };

@@ -1,18 +1,21 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import FloatingNav from "../components/navbar.jsx";
 import TopNavbar from "../components/TopNavbar.jsx";
+import SidebarLayout from "../components/SidebarLayout.jsx";
 
 const ProfilePage = () => {
   const navigate = useNavigate();
+  const [activeSection, setActiveSection] = useState('Profile');
 
   const handleLogout = () => {
     navigate('/');
   };
 
   const handleNav = (name) => {
+    setActiveSection(name);
     if (name === 'Home') navigate('/homepage');
     if (name === 'Donation') navigate('/global-donations');
+    if (name === 'Top Up') navigate('/top-up');
     if (name === 'Profile') navigate('/profile');
     if (name === 'Settings') navigate('/settings');
     // Add other navigations as needed
@@ -41,11 +44,8 @@ const ProfilePage = () => {
   return (
     <>
       <TopNavbar user={user} />
-      <div className="min-h-screen bg-white pr-50 ml-14">
-
-        {/* Main Content */}
-        <div className="max-w-7xl px-6 py-8">
-          <h1 className="text-4xl font-bold text-[#624d41] mb-8 text-left">My Profile</h1>
+      <SidebarLayout activeSection={activeSection} onNavigate={handleNav}>
+        <h1 className="text-4xl font-bold text-[#624d41] mb-8 text-left">My Profile</h1>
 
           {/* Profile Picture and User Data Combined Section */}
           <div className="bg-gradient-to-br from-white to-[#f8f9fa] p-8 rounded-xl border border-[#e9ecef] shadow-md mb-8">
@@ -153,68 +153,19 @@ const ProfilePage = () => {
             </div>
           </div>
 
-          {/* Settings Section */}
-          <div className="bg-gradient-to-br from-white to-[#f8f9fa] p-8 rounded-xl border border-[#e9ecef] shadow-md">
-            <h2 className="text-2xl font-semibold text-[#624d41] mb-2 text-left">Settings</h2>
-            <p className="text-[#b6b1b2] text-sm mb-6 text-left">Customize your account preferences and privacy options.</p>
-            <div className="space-y-6">
-              <div className="flex items-center justify-between p-4 rounded-lg hover:bg-gray-50 transition-colors duration-200">
-                <div className="flex items-center space-x-4">
-                  <div className="bg-[#a50805] p-2 rounded-full">
-                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="text-[#624d41] font-medium">Email Notifications</h3>
-                    <p className="text-[#b6b1b2] text-sm">Receive updates about your donations and campaigns</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => handleToggle('notifications')}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[#a50805] focus:ring-offset-2 ${user.notifications ? 'bg-[#a50805]' : 'bg-gray-200'}`}
-                >
-                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${user.notifications ? 'translate-x-6' : 'translate-x-1'}`} />
-                </button>
-              </div>
-              <div className="flex items-center justify-between p-4 rounded-lg hover:bg-gray-50 transition-colors duration-200">
-                <div className="flex items-center space-x-4">
-                  <div className="bg-[#a50805] p-2 rounded-full">
-                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="text-[#624d41] font-medium">Dark Mode</h3>
-                    <p className="text-[#b6b1b2] text-sm">Switch to dark theme for better visibility</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => handleToggle('darkMode')}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[#a50805] focus:ring-offset-2 ${user.darkMode ? 'bg-[#a50805]' : 'bg-gray-200'}`}
-                >
-                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${user.darkMode ? 'translate-x-6' : 'translate-x-1'}`} />
-                </button>
-              </div>
+        
+
+            {/* Save Button */}
+            <div className="mt-8 flex justify-end">
+              <button className="bg-[#a50805] text-white px-8 py-4 rounded-lg font-medium hover:bg-[#d32f2f] hover:shadow-lg transition-all duration-200 transform hover:scale-105 flex items-center space-x-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                <span>Save Changes</span>
+              </button>
             </div>
-          </div>
 
-          {/* Save Button */}
-          <div className="mt-8 flex justify-end">
-            <button className="bg-[#a50805] text-white px-8 py-4 rounded-lg font-medium hover:bg-[#d32f2f] hover:shadow-lg transition-all duration-200 transform hover:scale-105 flex items-center space-x-2">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-              </svg>
-              <span>Save Changes</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Floating Navigation */}
-      <div className="fixed right-20 top-40 h-screen z-10">
-        <FloatingNav onNavigate={handleNav} currentPage="Profile" />
-      </div>
+      </SidebarLayout>
     </>
   );
 };

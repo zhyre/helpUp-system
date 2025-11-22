@@ -1,12 +1,15 @@
 import React, { useState } from "react";
+import { useAuth } from "../contexts/AuthContext";
 import "./Login.css";
 
 const Login = ({ onClose, onSwitchToRegister, onLogin }) => {
+  const { login: authLogin } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -14,22 +17,44 @@ const Login = ({ onClose, onSwitchToRegister, onLogin }) => {
       ...prev,
       [name]: value
     }));
+    if (error) {
+      setError("");
+    }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
     setIsLoading(true);
-    console.log('Login handleSubmit called');
 
-    // Simulate login delay
-    setTimeout(() => {
-      console.log('Login timeout, calling onClose and onLogin');
-      onClose();
-      if (onLogin) {
-        onLogin();
+    try {
+      const response = await fetch("http://localhost:8080/api/users/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (response.ok) {
+        const user = await response.json();
+        console.log('Login successful:', user);
+        authLogin(user);
+        onClose();
+        if (onLogin) {
+          onLogin(user);
+        }
+      } else {
+        const errorMessage = await response.text();
+        setError(errorMessage || "Login failed.");
       }
+    } catch (err) {
+      console.error('Login error:', err);
+      setError("Network error. Try again later.");
+    } finally {
       setIsLoading(false);
-    }, 500);
+    }
   };
 
   return (
@@ -64,6 +89,12 @@ const Login = ({ onClose, onSwitchToRegister, onLogin }) => {
               disabled={isLoading}
             />
           </div>
+
+          {error && (
+            <p className="error-message" style={{ color: 'red', textAlign: 'center', marginTop: '10px' }}>
+              {error}
+            </p>
+          )}
 
           <button
             type="submit"

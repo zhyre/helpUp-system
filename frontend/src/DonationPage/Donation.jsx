@@ -1,20 +1,38 @@
-import React from "react";
+import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import TopNavbar from "../components/TopNavbar.jsx";
 import FloatingNav from "../components/navbar.jsx";
 import donations from "../data/donations.js"; // <-- IMPORT DATA
+import PageHeader from "../components/PageHeader.jsx";
+import CampaignDetails from "./CampaignDetails.jsx";
+import CampaignDescription from "./CampaignDescription.jsx";
+import WaysToHelp from "./WaysToHelp.jsx";
+import DonateButton from "../components/DonateButton.jsx";
+import DonateModal from "./DonateModal.jsx";
 
 const Donation = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const user = { firstName: "John", lastName: "Doe" };
 
   const donation = donations.find((d) => d.id === Number(id));
 
+  const campaignDetails = [
+    { label: "Organized by", value: donation.organizer },
+    { label: "Role", value: donation.role },
+    { label: "Goal", value: donation.goal },
+    { label: "Campaign Type", value: donation.type },
+    { label: "Location", value: donation.location },
+    { label: "Campaign Period", value: donation.period },
+    { label: "Date Posted", value: donation.posted }
+  ];
+
   const handleNav = (name) => {
     if (name === "Home") navigate("/homepage");
     if (name === "Donation") navigate("/global-donations");
+    if (name === "Top Up") navigate("/top-up");
     if (name === "Profile") navigate("/profile");
     if (name === "Settings") navigate("/settings");
   };
@@ -33,63 +51,56 @@ const Donation = () => {
       <TopNavbar user={user} />
 
       {/* PAGE WRAPPER */}
-      <div className="min-h-screen bg-white pr-50 ml-14">
-        <div className="max-w-7xl px-6 py-8">
+      <div className="min-h-screen bg-gray-50 pr-50 ml-14">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+          {/* BACK BUTTON */}
+          <button
+            onClick={() => navigate("/global-donations")}
+            className="flex items-center mb-6 text-gray-600 hover:text-gray-800 transition-colors duration-200"
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+            Back to Campaigns
+          </button>
 
           {/* HEADER */}
-          <div className="mb-8 bg-gradient-to-r from-[#f8f9fa] to-[#e9ecef] p-8 rounded-xl border-l-4 border-[#a50805] shadow-md">
-            <h1 className="text-4xl font-bold text-[#624d41] mb-3 text-left">
-              {donation.title}
-            </h1>
-            <p className="text-[#b56547] text-lg leading-relaxed text-left">
-              Detailed information about this campaign.
-            </p>
-          </div>
+          <PageHeader
+            title={donation.title}
+            subtitle="Detailed information about this campaign."
+            image="/images/fire_landing_bg.jpg"
+          />
 
           {/* CONTENT CARD */}
-          <div className="bg-white p-8 rounded-xl shadow-md border border-[#e9ecef] text-left">
+          <div className="bg-white p-6 sm:p-8 rounded-xl shadow-lg border border-gray-200 text-left space-y-8">
 
             {/* DETAILS */}
-            <div className="text-sm text-[#624d41] space-y-1 mb-10">
-              <p><strong>Organized by:</strong> {donation.organizer}</p>
-              <p><strong>Role:</strong> {donation.role}</p>
-              <p><strong>Goal:</strong> {donation.goal}</p>
-              <p><strong>Campaign Type:</strong> {donation.type}</p>
-              <p><strong>Location:</strong> {donation.location}</p>
-              <p><strong>Campaign Period:</strong> {donation.period}</p>
-              <p><strong>Date Posted:</strong> {donation.posted}</p>
-            </div>
+            <CampaignDetails details={campaignDetails} />
 
             {/* ABOUT */}
-            <h2 className="text-2xl font-bold text-[#624d41] mb-3">
-              About the Campaign
-            </h2>
-            <p className="text-gray-700 leading-relaxed whitespace-pre-line mb-10">
-              {donation.description}
-            </p>
+            <CampaignDescription description={donation.description} />
 
             {/* WAYS TO HELP */}
-            <h2 className="text-2xl font-bold text-[#624d41] mb-3">Ways to Help:</h2>
-            <ul className="list-disc pl-6 text-[#624d41] text-sm space-y-2 mb-10">
-              {donation.ways.map((w, i) => (
-                <li key={i}>{w}</li>
-              ))}
-            </ul>
+            <WaysToHelp ways={donation.ways} />
 
             {/* DONATE BUTTON */}
-            <button className="bg-[#a50805] text-white px-8 py-3 rounded-xl text-lg font-semibold hover:bg-red-700">
-              Donate
-            </button>
+            <div className="flex justify-end">
+              <DonateButton onClick={() => setIsModalOpen(true)} />
+            </div>
 
           </div>
 
         </div>
       </div>
 
-      {/* FLOATING NAV */}
-      <div className="fixed right-20 top-40 h-screen z-10">
-        <FloatingNav onNavigate={handleNav} currentPage="Donation" />
-      </div>
+      {/* DONATE MODAL */}
+      {isModalOpen && (
+        <DonateModal
+          onClose={() => setIsModalOpen(false)}
+          campaignTitle={donation.title}
+        />
+      )}
     </>
   );
 };

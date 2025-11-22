@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 
-const Register = ({ onClose, onSwitchToLogin }) => {
+const Register = ({ onClose, onSwitchToLogin, onRegisterSuccess }) => {
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
+    first_name: "",
+    last_name: "",
     email: "",
     contactNumber: "",
     password: "",
@@ -26,8 +26,8 @@ const Register = ({ onClose, onSwitchToLogin }) => {
 
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.firstName.trim()) newErrors.firstName = "First name is required";
-    if (!formData.lastName.trim()) newErrors.lastName = "Last name is required";
+    if (!formData.first_name.trim()) newErrors.first_name = "First name is required";
+    if (!formData.last_name.trim()) newErrors.last_name = "Last name is required";
     if (!formData.email.trim()) newErrors.email = "Email is required";
     else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = "Invalid email";
     if (!formData.password) newErrors.password = "Password is required";
@@ -61,7 +61,11 @@ const Register = ({ onClose, onSwitchToLogin }) => {
 
       if (response.ok) {
         setSuccessMessage("User registered successfully!");
-        setTimeout(() => onClose(), 1500);
+        setTimeout(() => {
+          if (onRegisterSuccess) {
+            onRegisterSuccess();
+          }
+        }, 1500);
       } else {
         setErrors({ general: "Registration failed." });
       }
@@ -106,14 +110,14 @@ const Register = ({ onClose, onSwitchToLogin }) => {
                 <div>
                   <input
                     type="text"
-                    name="firstName"
-                    value={formData.firstName}
+                    name="first_name"
+                    value={formData.first_name}
                     onChange={handleChange}
                     className="w-full border px-3 py-2 rounded-md focus:outline-red-600"
                     placeholder="Enter first name"
                   />
-                  {errors.firstName && (
-                    <p className="text-red-600 text-sm">{errors.firstName}</p>
+                  {errors.first_name && (
+                    <p className="text-red-600 text-sm">{errors.first_name}</p>
                   )}
                 </div>
 
@@ -155,23 +159,23 @@ const Register = ({ onClose, onSwitchToLogin }) => {
 
                 {/* LAST NAME */}
                 <div>
-                 
+
                   <input
                     type="text"
-                    name="lastName"
-                    value={formData.lastName}
+                    name="last_name"
+                    value={formData.last_name}
                     onChange={handleChange}
                     className="w-full border px-3 py-2 rounded-md focus:outline-red-600"
                     placeholder="Enter last name"
                   />
-                  {errors.lastName && (
-                    <p className="text-red-600 text-sm">{errors.lastName}</p>
+                  {errors.last_name && (
+                    <p className="text-red-600 text-sm">{errors.last_name}</p>
                   )}
                 </div>
 
                 {/* CONTACT NUMBER */}
                 <div>
-             
+
                   <input
                     type="text"
                     name="contactNumber"
@@ -180,6 +184,20 @@ const Register = ({ onClose, onSwitchToLogin }) => {
                     className="w-full border px-3 py-2 rounded-md focus:outline-red-600"
                     placeholder="Enter mobile number"
                   />
+                </div>
+
+                {/* ROLE SELECTION */}
+                <div>
+                  <label className="block text-gray-700 font-medium mb-2">Role</label>
+                  <select
+                    name="role"
+                    value={formData.role}
+                    onChange={handleChange}
+                    className="w-full border px-3 py-2 rounded-md focus:outline-red-600"
+                  >
+                    <option value="DONOR">Donor</option>
+                    <option value="ORGANIZATION">Organization</option>
+                  </select>
                 </div>
 
                 {/* CONFIRM PASSWORD */}

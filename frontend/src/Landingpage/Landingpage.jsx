@@ -67,7 +67,7 @@ function Landingpage({ onLogin }) {
             <button className="register-btn" onClick={handleOpenRegister}>
               Register
             </button>
-            <button className="donate-btn">Donate →</button>
+            <button className="donate-btn" onClick={handleOpenLogin}>Donate →</button>
           </div>
         </div>
 
@@ -388,7 +388,7 @@ function Landingpage({ onLogin }) {
             <button className="modal-close" onClick={handleCloseRegister}>
               &times;
             </button>
-            <Register onClose={handleCloseRegister} onSwitchToLogin={handleSwitchToLogin} />
+            <Register onClose={handleCloseRegister} onSwitchToLogin={handleSwitchToLogin} onRegisterSuccess={onLogin} />
           </div>
         </div>
       )}

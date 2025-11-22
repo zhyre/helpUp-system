@@ -52,7 +52,7 @@ h4 {
 .register-btn,
 .donate-btn {
   border: none;
-  padding: 15px 25px;
+  padding: 20px 25px 15px 25px;
   border-radius: 10px;
   cursor: pointer;
   font-weight: 600;
@@ -61,6 +61,7 @@ h4 {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   position: relative;
   overflow: hidden;
+  margin-top: 25px;
 }
 
 .register-btn {
@@ -108,19 +109,31 @@ h4 {
   flex: 1;
   margin-right: 50px;
   color: #ffffff;
+  text-align: left;
 }
 
 .hero-text h1 {
   font-size: 4em;
+  text-align: left;
 }
 
 .hero-text p {
   font-size: 1.5em;
   margin-top: 10px;
+  margin-left: 12px;
+  text-align: left;
 }
 
 .hero-text h1 span {
   color: #a50805;
+}
+
+.nav-right {
+  text-align: left;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 15px;
 }
 
 .hero-cards {
