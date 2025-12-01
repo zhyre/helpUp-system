@@ -166,7 +166,6 @@ const SettingsPage = () => {
             </div>
 
           </div>
-
           
           {/* Account Management Section */}
           <div className="bg-gradient-to-br from-white to-[#f8f9fa] p-8 rounded-xl border border-[#e9ecef] shadow-md mb-8">

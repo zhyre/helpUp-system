@@ -97,7 +97,7 @@ const DataTable = ({
             </thead>
             <tbody className="divide-y divide-[#e9ecef]">
               {data.map((item, index) => (
-                <tr key={item.id || index} className="hover:bg-gradient-to-r hover:from-[#f8f9fa] hover:to-white transition-all duration-200 group">
+                <tr key={item.id || item.userID || index} className="hover:bg-gradient-to-r hover:from-[#f8f9fa] hover:to-white transition-all duration-200 group">
                   {columns.map((column, colIndex) => (
                     <td key={colIndex} className="px-6 py-4 text-left">
                       {column.render ? column.render(item) : item[column.key]}
@@ -118,7 +118,7 @@ const DataTable = ({
                       )}
                       {onDelete && (
                         <button
-                          onClick={() => onDelete(item.id)}
+                          onClick={() => onDelete(item.id || item.userID)}
                           className="bg-gradient-to-r from-[#d32f2f] to-[#a50805] text-white px-4 py-2 rounded-lg hover:from-[#a50805] hover:to-[#d32f2f] transition-all duration-200 text-sm font-medium flex items-center space-x-1 shadow-md hover:shadow-lg transform hover:scale-105"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import TopNavbar from './TopNavbar';
@@ -12,12 +12,64 @@ const AdminPanel = () => {
   const [showOrgModal, setShowOrgModal] = useState(false);
   const [selectedOrg, setSelectedOrg] = useState(null);
 
-  // Mock data
-  const [users, setUsers] = useState([
-    { id: 1, name: 'John Doe', email: 'john@example.com', role: 'User', status: 'Active', joinDate: '2023-01-15' },
-    { id: 2, name: 'Jane Smith', email: 'jane@example.com', role: 'Admin', status: 'Active', joinDate: '2023-02-20' },
-    { id: 3, name: 'Bob Johnson', email: 'bob@example.com', role: 'User', status: 'Inactive', joinDate: '2023-03-10' },
-  ]);
+  // User management state
+  const [users, setUsers] = useState([]);
+  const [userSchema, setUserSchema] = useState([]);
+  const [usersLoading, setUsersLoading] = useState(false);
+  const [schemaLoading, setSchemaLoading] = useState(false);
+  const [usersError, setUsersError] = useState(null);
+  const [schemaError, setSchemaError] = useState(null);
+
+  // Fetch user table schema
+  useEffect(() => {
+    const fetchSchema = async () => {
+      setSchemaLoading(true);
+      setSchemaError(null);
+      try {
+        // Simulate fetching schema - in a real app, this would be an API call
+        const schema = [
+          { key: 'userID', label: 'ID', type: 'number' },
+          { key: 'firstName', label: 'First Name', type: 'string' },
+          { key: 'lastName', label: 'Last Name', type: 'string' },
+          { key: 'email', label: 'Email', type: 'string' },
+          { key: 'contactNumber', label: 'Contact Number', type: 'string' },
+          { key: 'role', label: 'Role', type: 'string' },
+          { key: 'walletBalance', label: 'Wallet Balance', type: 'currency' },
+        ];
+        setUserSchema(schema);
+      } catch (err) {
+        setSchemaError('Failed to load table schema');
+      } finally {
+        setSchemaLoading(false);
+      }
+    };
+
+    fetchSchema();
+  }, []);
+
+  // Fetch users after schema is loaded
+  useEffect(() => {
+    if (userSchema.length === 0) return;
+
+    const fetchUsers = async () => {
+      setUsersLoading(true);
+      setUsersError(null);
+      try {
+        const response = await fetch('http://localhost:8080/api/users');
+        if (!response.ok) {
+          throw new Error('Failed to fetch users');
+        }
+        const data = await response.json();
+        setUsers(data);
+      } catch (err) {
+        setUsersError(err.message);
+      } finally {
+        setUsersLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, [userSchema]);
 
   const [organizations, setOrganizations] = useState([
     { id: 1, name: 'Barangay San Antonio', type: 'Community', location: 'Manila', status: 'Active', contactPerson: 'Maria Santos', joinDate: '2023-01-10' },
@@ -65,7 +117,7 @@ const AdminPanel = () => {
   };
 
   const handleDeleteUser = (userId) => {
-    setUsers(users.filter(user => user.id !== userId));
+    setUsers(users.filter(user => user.userID !== userId));
   };
 
   const handleEditOrg = (org) => {
@@ -220,75 +272,125 @@ const AdminPanel = () => {
     </div>
   );
 
-  const renderUsers = () => (
-    <div className="space-y-8">
-      <div className="flex justify-between items-center">
-        <h1 className="text-4xl font-bold text-[#624d41]">User Management</h1>
-        <button className="bg-[#a50805] text-white px-6 py-3 rounded-lg hover:bg-[#d32f2f] transition-colors font-medium flex items-center space-x-2">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-          </svg>
-          <span>Add User</span>
-        </button>
-      </div>
+  const renderUsers = () => {
+    if (schemaLoading) {
+      return (
+        <div className="space-y-8">
+          <h1 className="text-4xl font-bold text-[#624d41]">User Management</h1>
+          <div className="flex justify-center items-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#a50805]"></div>
+            <span className="ml-3 text-[#624d41]">Loading table structure...</span>
+          </div>
+        </div>
+      );
+    }
 
-      <div className="bg-gradient-to-br from-white to-[#f8f9fa] border border-[#e9ecef] rounded-xl shadow-md overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-[#f8f9fa] border-b border-[#e9ecef]">
-              <tr>
-                <th className="px-6 py-4 text-left text-[#624d41] font-semibold">Name</th>
-                <th className="px-6 py-4 text-left text-[#624d41] font-semibold">Email</th>
-                <th className="px-6 py-4 text-left text-[#624d41] font-semibold">Role</th>
-                <th className="px-6 py-4 text-left text-[#624d41] font-semibold">Status</th>
-                <th className="px-6 py-4 text-left text-[#624d41] font-semibold">Join Date</th>
-                <th className="px-6 py-4 text-left text-[#624d41] font-semibold">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((user) => (
-                <tr key={user.id} className="border-b border-[#e9ecef] hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 text-[#624d41]">{user.name}</td>
-                  <td className="px-6 py-4 text-[#624d41]">{user.email}</td>
-                  <td className="px-6 py-4">
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      user.role === 'Admin' ? 'bg-[#a50805] text-white' : 'bg-[#b6b1b2] text-[#624d41]'
-                    }`}>
-                      {user.role}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      user.status === 'Active' ? 'bg-[#4caf50] text-white' : 'bg-[#d32f2f] text-white'
-                    }`}>
-                      {user.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-[#624d41]">{user.joinDate}</td>
-                  <td className="px-6 py-4">
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={() => handleEditUser(user)}
-                        className="bg-[#a50805] text-white px-3 py-1 rounded hover:bg-[#d32f2f] transition-colors text-sm"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDeleteUser(user.id)}
-                        className="bg-[#d32f2f] text-white px-3 py-1 rounded hover:bg-[#a50805] transition-colors text-sm"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </td>
+    if (schemaError) {
+      return (
+        <div className="space-y-8">
+          <h1 className="text-4xl font-bold text-[#624d41]">User Management</h1>
+          <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
+            <p className="text-red-600 font-medium">Error loading table structure</p>
+            <p className="text-red-500 text-sm mt-2">{schemaError}</p>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-8">
+        <div className="flex justify-between items-center">
+          <h1 className="text-4xl font-bold text-[#624d41]">User Management</h1>
+          <button className="bg-[#a50805] text-white px-6 py-3 rounded-lg hover:bg-[#d32f2f] transition-colors font-medium flex items-center space-x-2">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+            </svg>
+            <span>Add User</span>
+          </button>
+        </div>
+
+        <div className="bg-gradient-to-br from-white to-[#f8f9fa] border border-[#e9ecef] rounded-xl shadow-md overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-[#f8f9fa] border-b border-[#e9ecef]">
+                <tr>
+                  {userSchema.map((column) => (
+                    <th key={column.key} className="px-6 py-4 text-left text-[#624d41] font-semibold">
+                      {column.label}
+                    </th>
+                  ))}
+                  <th className="px-6 py-4 text-left text-[#624d41] font-semibold">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {usersLoading ? (
+                  <tr>
+                    <td colSpan={userSchema.length + 1} className="px-6 py-12 text-center">
+                      <div className="flex justify-center items-center">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#a50805]"></div>
+                        <span className="ml-3 text-[#624d41]">Loading users...</span>
+                      </div>
+                    </td>
+                  </tr>
+                ) : usersError ? (
+                  <tr>
+                    <td colSpan={userSchema.length + 1} className="px-6 py-12 text-center">
+                      <div className="bg-red-50 border border-red-200 rounded-lg p-4 inline-block">
+                        <p className="text-red-600 font-medium">Error loading users</p>
+                        <p className="text-red-500 text-sm mt-1">{usersError}</p>
+                      </div>
+                    </td>
+                  </tr>
+                ) : users.length === 0 ? (
+                  <tr>
+                    <td colSpan={userSchema.length + 1} className="px-6 py-12 text-center text-[#b6b1b2]">
+                      No users found
+                    </td>
+                  </tr>
+                ) : (
+                  users.map((user) => (
+                    <tr key={user.userID} className="border-b border-[#e9ecef] hover:bg-gray-50 transition-colors">
+                      {userSchema.map((column) => (
+                        <td key={column.key} className="px-6 py-4 text-[#624d41]">
+                          {column.type === 'currency' ? (
+                            `₱${user[column.key]?.toLocaleString() || '0'}`
+                          ) : column.key === 'role' ? (
+                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                              user[column.key] === 'admin' ? 'bg-[#a50805] text-white' : 'bg-[#b6b1b2] text-[#624d41]'
+                            }`}>
+                              {user[column.key] || 'N/A'}
+                            </span>
+                          ) : (
+                            user[column.key] || 'N/A'
+                          )}
+                        </td>
+                      ))}
+                      <td className="px-6 py-4">
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => handleEditUser(user)}
+                            className="bg-[#a50805] text-white px-3 py-1 rounded hover:bg-[#d32f2f] transition-colors text-sm"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteUser(user.userID)}
+                            className="bg-[#d32f2f] text-white px-3 py-1 rounded hover:bg-[#a50805] transition-colors text-sm"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const renderOrganizations = () => (
     <div className="space-y-8">
@@ -591,10 +693,18 @@ const AdminPanel = () => {
             <h3 className="text-xl font-bold text-[#624d41] mb-6">Edit User</h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-[#624d41] font-medium mb-2">Name</label>
+                <label className="block text-[#624d41] font-medium mb-2">First Name</label>
                 <input
                   type="text"
-                  defaultValue={selectedUser.name}
+                  defaultValue={selectedUser.firstName}
+                  className="w-full px-4 py-2 border border-[#e9ecef] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#a50805]"
+                />
+              </div>
+              <div>
+                <label className="block text-[#624d41] font-medium mb-2">Last Name</label>
+                <input
+                  type="text"
+                  defaultValue={selectedUser.lastName}
                   className="w-full px-4 py-2 border border-[#e9ecef] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#a50805]"
                 />
               </div>
@@ -607,13 +717,22 @@ const AdminPanel = () => {
                 />
               </div>
               <div>
+                <label className="block text-[#624d41] font-medium mb-2">Contact Number</label>
+                <input
+                  type="text"
+                  defaultValue={selectedUser.contactNumber}
+                  className="w-full px-4 py-2 border border-[#e9ecef] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#a50805]"
+                />
+              </div>
+              <div>
                 <label className="block text-[#624d41] font-medium mb-2">Role</label>
                 <select
                   defaultValue={selectedUser.role}
                   className="w-full px-4 py-2 border border-[#e9ecef] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#a50805]"
                 >
-                  <option>User</option>
-                  <option>Admin</option>
+                  <option value="donor">Donor</option>
+                  <option value="admin">Admin</option>
+                  <option value="organization">Organization</option>
                 </select>
               </div>
             </div>
