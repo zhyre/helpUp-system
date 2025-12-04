@@ -1,6 +1,5 @@
-
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import TopNavbar from "../components/TopNavbar.jsx";
 import AddCampaignModal from "../components/AddCampaignModal.jsx";
@@ -8,9 +7,11 @@ import Dashboard from './Dashboard';
 import Campaigns from './Campaigns';
 import Analytics from './Analytics';
 import Settings from './Settings';
+import { getCampaignsByOrganization, createCampaign, deleteCampaign as deleteCampaignAPI } from '../services/campaignService';
 
 const OrganizationPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const [activeSection, setActiveSection] = useState('dashboard');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -18,72 +19,106 @@ const OrganizationPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [sortBy, setSortBy] = useState('newest');
+  const [campaigns, setCampaigns] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Mock organization data
+  // Get organization ID from user - assuming user.organizationID exists
+  // If not in user object, you'll need to fetch it from an API
+  const organizationId = user?.organizationID || user?.organization?.organizationID || 1;
+
+  // Mock organization data - Replace with actual data from auth context or API
   const organization = {
-    name: 'Barangay San Antonio',
+    id: organizationId,
+    name: user?.organization?.name || 'Barangay San Antonio',
     description: 'A community organization dedicated to helping disaster-affected families rebuild their lives and homes.',
     type: 'Community',
     location: 'San Antonio, Philippines',
-    contactPerson: 'Maria Santos',
+    contactPerson: user?.firstName + ' ' + user?.lastName || 'Maria Santos',
     established: '2015',
-    totalCampaigns: 12,
-    totalRaised: 250000
+    totalCampaigns: campaigns.length,
+    totalRaised: campaigns.reduce((sum, c) => sum + (c.raised || 0), 0)
   };
 
-  // Mock campaigns data
-  const [campaigns, setCampaigns] = useState([
-    {
-      id: 1,
-      title: 'Fire Recovery Support',
-      description: 'Help families recover from the recent fire incident in our community.',
-      goal: 50000,
-      raised: 35000,
-      type: 'Relief',
-      location: 'Barangay San Antonio',
-      period: '3 months',
-      status: 'Active',
-      posted: '2024-11-15'
-    },
-    {
-      id: 2,
-      title: 'Home Reconstruction Fund',
-      description: 'Support the reconstruction of homes destroyed by natural disasters.',
-      goal: 100000,
-      raised: 75000,
-      type: 'Reconstruction',
-      location: 'Barangay San Antonio',
-      period: '6 months',
-      status: 'Active',
-      posted: '2024-10-20'
-    },
-    {
-      id: 3,
-      title: 'Community Education Program',
-      description: 'Provide educational materials and support for underprivileged children.',
-      goal: 25000,
-      raised: 25000,
-      type: 'Education',
-      location: 'Barangay San Antonio',
-      period: '1 year',
-      status: 'Completed',
-      posted: '2024-09-01'
-    }
-  ]);
-
-  const handleAddCampaign = async (campaignData) => {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    const newCampaign = {
-      id: campaigns.length + 1,
-      ...campaignData,
-      raised: 0,
-      status: 'Active',
-      posted: new Date().toISOString().split('T')[0]
+  // Fetch campaigns on component mount and when returning to the page
+  useEffect(() => {
+    const fetchCampaigns = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await getCampaignsByOrganization(organizationId);
+        
+        // Transform backend data to match frontend structure
+        const transformedCampaigns = data.map(campaign => ({
+          id: campaign.campaignID,
+          title: campaign.name,
+          description: campaign.description || 'No description provided',
+          goal: campaign.targetAmount || 0,
+          raised: 0, // This should be calculated from donations
+          type: 'Relief', // Add this field to backend if needed
+          location: organization.location,
+          period: '3 months', // Calculate from start/end dates
+          status: 'Active', // Add this field to backend if needed
+          posted: campaign.startDate,
+          endDate: campaign.endDate
+        }));
+        
+        setCampaigns(transformedCampaigns);
+      } catch (err) {
+        console.error('Error fetching campaigns:', err);
+        setError('Failed to load campaigns. Please try again.');
+        setCampaigns([]);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    setCampaigns(prev => [...prev, newCampaign]);
+    if (organizationId) {
+      fetchCampaigns();
+    }
+  }, [organizationId, organization.location, location.pathname]);
+
+  const handleAddCampaign = async (campaignData) => {
+    try {
+      setLoading(true);
+      
+      // Transform frontend data to backend structure
+      const backendCampaignData = {
+        name: campaignData.title,
+        description: campaignData.description,
+        targetAmount: Number.parseFloat(campaignData.goal),
+        startDate: new Date().toISOString().split('T')[0],
+        endDate: campaignData.endDate,
+        organization: {
+          organizationID: organization.id
+        }
+      };
+
+      const newCampaign = await createCampaign(backendCampaignData);
+      
+      // Transform response to frontend structure
+      const transformedCampaign = {
+        id: newCampaign.campaignID,
+        title: newCampaign.name,
+        description: newCampaign.description || 'No description provided',
+        goal: newCampaign.targetAmount || 0,
+        raised: 0,
+        type: campaignData.type || 'Relief',
+        location: organization.location,
+        period: campaignData.period || '3 months',
+        status: 'Active',
+        posted: newCampaign.startDate,
+        endDate: newCampaign.endDate
+      };
+
+      setCampaigns(prev => [...prev, transformedCampaign]);
+      setIsModalOpen(false);
+    } catch (err) {
+      console.error('Error creating campaign:', err);
+      alert('Failed to create campaign. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleEditCampaign = (campaign) => {
@@ -91,8 +126,19 @@ const OrganizationPage = () => {
     setIsModalOpen(true);
   };
 
-  const handleDeleteCampaign = (campaignId) => {
-    setCampaigns(campaigns.filter(campaign => campaign.id !== campaignId));
+  const handleDeleteCampaign = async (campaignId) => {
+    if (globalThis.confirm('Are you sure you want to delete this campaign?')) {
+      try {
+        setLoading(true);
+        await deleteCampaignAPI(campaignId);
+        setCampaigns(campaigns.filter(campaign => campaign.id !== campaignId));
+      } catch (err) {
+        console.error('Error deleting campaign:', err);
+        alert('Failed to delete campaign. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    }
   };
 
 
@@ -362,10 +408,35 @@ const OrganizationPage = () => {
 
         {/* Main Content */}
         <div className="flex-1 p-8">
-          {activeSection === 'dashboard' && <Dashboard organization={organization} campaigns={campaigns} onCreateCampaign={() => setIsModalOpen(true)} onViewAnalytics={() => setActiveSection('analytics')} />}
-          {activeSection === 'campaigns' && <Campaigns campaigns={campaigns} setCampaigns={setCampaigns} searchTerm={searchTerm} setSearchTerm={setSearchTerm} statusFilter={statusFilter} setStatusFilter={setStatusFilter} sortBy={sortBy} setSortBy={setSortBy} onCreateCampaign={() => setIsModalOpen(true)} onEditCampaign={handleEditCampaign} onDeleteCampaign={handleDeleteCampaign} navigate={navigate} />}
-          {activeSection === 'analytics' && <Analytics organization={organization} />}
-          {activeSection === 'settings' && <Settings organization={organization} />}
+          {loading && campaigns.length === 0 ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-[#a50805] mx-auto"></div>
+                <p className="mt-4 text-[#624d41] text-lg">Loading campaigns...</p>
+              </div>
+            </div>
+          ) : error ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center">
+                <div className="text-[#f44336] text-6xl mb-4">⚠️</div>
+                <p className="text-[#624d41] text-xl font-semibold mb-2">Error Loading Campaigns</p>
+                <p className="text-[#b6b1b2] mb-4">{error}</p>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="bg-[#a50805] text-white px-6 py-2 rounded-lg hover:bg-[#d32f2f] transition-colors"
+                >
+                  Retry
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              {activeSection === 'dashboard' && <Dashboard organization={organization} campaigns={campaigns} onCreateCampaign={() => setIsModalOpen(true)} onViewAnalytics={() => setActiveSection('analytics')} />}
+              {activeSection === 'campaigns' && <Campaigns campaigns={campaigns} setCampaigns={setCampaigns} searchTerm={searchTerm} setSearchTerm={setSearchTerm} statusFilter={statusFilter} setStatusFilter={setStatusFilter} sortBy={sortBy} setSortBy={setSortBy} onCreateCampaign={() => setIsModalOpen(true)} onEditCampaign={handleEditCampaign} onDeleteCampaign={handleDeleteCampaign} navigate={navigate} />}
+              {activeSection === 'analytics' && <Analytics organization={organization} />}
+              {activeSection === 'settings' && <Settings organization={organization} />}
+            </>
+          )}
         </div>
       </div>
 

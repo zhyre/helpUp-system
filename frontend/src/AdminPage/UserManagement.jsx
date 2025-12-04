@@ -1,20 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import DataTable from './DataTable';
+import UserModal from '../components/UserModal';
+import api from '../services/api';
 
-const UserManagement = ({
-  showAddUserModal,
-  setShowAddUserModal,
-  showUserModal,
-  setShowUserModal,
-  selectedUser,
-  setSelectedUser,
-  editFormData,
-  setEditFormData,
-  createFormData,
-  setCreateFormData,
-  handleSaveUser,
-  handleCreateUser
-}) => {
+const UserManagement = () => {
   // User management state
   const [users, setUsers] = useState([]);
   const [userSchema, setUserSchema] = useState([]);
@@ -23,8 +12,10 @@ const UserManagement = ({
   const [usersError, setUsersError] = useState(null);
   const [schemaError, setSchemaError] = useState(null);
   const [editLoading, setEditLoading] = useState(false);
-  const [deleteLoading, setDeleteLoading] = useState(null); // userID of user being deleted
   const [createLoading, setCreateLoading] = useState(false);
+  const [showAddUserModal, setShowAddUserModal] = useState(false);
+  const [showUserModal, setShowUserModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
 
   // Fetch user table schema
   useEffect(() => {
@@ -40,11 +31,11 @@ const UserManagement = ({
           { key: 'email', label: 'Email', type: 'string' },
           { key: 'contactNumber', label: 'Contact Number', type: 'string' },
           { key: 'role', label: 'Role', type: 'string' },
-          { key: 'walletBalance', label: 'Wallet Balance', type: 'currency' },
         ];
         setUserSchema(schema);
       } catch (err) {
         setSchemaError('Failed to load table schema');
+        console.error('Error loading table schema:', err);
       } finally {
         setSchemaLoading(false);
       }
@@ -58,14 +49,10 @@ const UserManagement = ({
     setUsersLoading(true);
     setUsersError(null);
     try {
-      const response = await fetch('http://localhost:8080/api/users');
-      if (!response.ok) {
-        throw new Error('Failed to fetch users');
-      }
-      const data = await response.json();
+      const data = await api.get('/users');
       setUsers(data);
     } catch (err) {
-      setUsersError(err.message);
+      setUsersError(err.message || 'Failed to fetch users');
     } finally {
       setUsersLoading(false);
     }
@@ -78,36 +65,21 @@ const UserManagement = ({
 
   const handleEditUser = (user) => {
     setSelectedUser(user);
-    setEditFormData({
-      firstName: user.firstName || '',
-      lastName: user.lastName || '',
-      email: user.email || '',
-      contactNumber: user.contactNumber || '',
-      role: user.role || 'donor',
-    });
     setShowUserModal(true);
   };
 
   const handleDeleteUser = async (userId) => {
-    if (window.confirm('Are you sure you want to delete this user?')) {
-      setDeleteLoading(userId);
+    if (!userId) {
+      alert('User ID is missing. Please refresh the page and try again.');
+      return;
+    }
+    if (globalThis.confirm('Are you sure you want to delete this user?')) {
       try {
-        const response = await fetch(`http://localhost:8080/api/users/${userId}`, {
-          method: 'DELETE',
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to delete user');
-        }
-
-        // Remove user from local state
-        setUsers(users.filter(user => user.userID !== userId));
-        // Refresh the user list
-        fetchUsers();
+        await api.delete(`/users/${userId}`);
+        await fetchUsers();
       } catch (err) {
+        console.error('Delete user error:', err);
         alert(`Error deleting user: ${err.message}`);
-      } finally {
-        setDeleteLoading(null);
       }
     }
   };
@@ -115,30 +87,15 @@ const UserManagement = ({
   const handleSaveUserInternal = async (userData) => {
     setEditLoading(true);
     try {
-      const response = await fetch(`http://localhost:8080/api/users/${selectedUser.userID}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(userData),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update user');
+      if (!selectedUser?.userID) {
+        throw new Error('User ID is missing. Please refresh and try again.');
       }
-
-      const updatedUser = await response.json();
-
-      // Update user in local state
-      setUsers(users.map(user =>
-        user.userID === selectedUser.userID ? updatedUser : user
-      ));
-
+      await api.put(`/users/${selectedUser.userID}`, userData);
       setShowUserModal(false);
       setSelectedUser(null);
-      // Refresh the user list
-      fetchUsers();
+      await fetchUsers();
     } catch (err) {
+      console.error('Update user error:', err);
       alert(`Error updating user: ${err.message}`);
     } finally {
       setEditLoading(false);
@@ -148,33 +105,9 @@ const UserManagement = ({
   const handleCreateUserInternal = async (userData) => {
     setCreateLoading(true);
     try {
-      const response = await fetch('http://localhost:8080/api/users', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(userData),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to create user');
-      }
-
-      const newUser = await response.json();
-
-      // Add user to local state
+      const newUser = await api.post('/users', userData);
       setUsers([...users, newUser]);
-
       setShowAddUserModal(false);
-      setCreateFormData({
-        firstName: '',
-        lastName: '',
-        email: '',
-        contactNumber: '',
-        role: 'donor',
-        password: ''
-      });
-      // Refresh the user list
       fetchUsers();
     } catch (err) {
       alert(`Error creating user: ${err.message}`);
@@ -256,13 +189,13 @@ const UserManagement = ({
       )
     },
     {
-      header: 'Wallet Balance',
+      header: 'Contact Number',
       render: (user) => (
         <div className="flex items-center text-sm text-[#624d41]">
           <svg className="w-4 h-4 mr-1 text-[#b6b1b2]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
           </svg>
-          ₱{user.walletBalance?.toLocaleString() || '0'}
+          {user.contactNumber || 'N/A'}
         </div>
       )
     }
@@ -286,6 +219,39 @@ const UserManagement = ({
     }
   ];
 
+
+  let content;
+  if (usersLoading) {
+    content = (
+      <div className="flex justify-center items-center py-12">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#a50805]"></div>
+        <span className="ml-3 text-[#624d41]">Loading users...</span>
+      </div>
+    );
+  } else if (usersError) {
+    content = (
+      <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
+        <p className="text-red-600 font-medium">Error loading users</p>
+        <p className="text-red-500 text-sm mt-2">{usersError}</p>
+      </div>
+    );
+  } else {
+    content = (
+      <DataTable
+        title=""
+        data={users}
+        columns={userColumns}
+        stats={userStats}
+        onEdit={handleEditUser}
+        onDelete={handleDeleteUser}
+        onAdd={() => setShowAddUserModal(true)}
+        addButtonText="Add New User"
+        searchPlaceholder="Search users by name or email..."
+        filters={userFilters}
+      />
+    );
+  }
+
   return (
     <>
       <div className="space-y-8">
@@ -301,210 +267,31 @@ const UserManagement = ({
             <span>Add User</span>
           </button>
         </div>
-
-        {usersLoading ? (
-          <div className="flex justify-center items-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#a50805]"></div>
-            <span className="ml-3 text-[#624d41]">Loading users...</span>
-          </div>
-        ) : usersError ? (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
-            <p className="text-red-600 font-medium">Error loading users</p>
-            <p className="text-red-500 text-sm mt-2">{usersError}</p>
-          </div>
-        ) : (
-          <DataTable
-            title=""
-            data={users}
-            columns={userColumns}
-            stats={userStats}
-            onEdit={handleEditUser}
-            onDelete={handleDeleteUser}
-            onAdd={() => setShowAddUserModal(true)}
-            addButtonText="Add New User"
-            searchPlaceholder="Search users by name or email..."
-            filters={userFilters}
-          />
-        )}
+        {content}
       </div>
 
       {/* User Edit Modal */}
-      {showUserModal && selectedUser && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-8 rounded-xl shadow-2xl max-w-md w-full mx-4">
-            <h3 className="text-xl font-bold text-[#624d41] mb-6">Edit User</h3>
-            <form onSubmit={(e) => {
-              e.preventDefault();
-              handleSaveUserInternal(editFormData);
-            }}>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-[#624d41] font-medium mb-2">First Name</label>
-                  <input
-                    type="text"
-                    value={editFormData.firstName || ''}
-                    onChange={(e) => setEditFormData({...editFormData, firstName: e.target.value})}
-                    className="w-full px-4 py-2 border border-[#e9ecef] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#a50805]"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-[#624d41] font-medium mb-2">Last Name</label>
-                  <input
-                    type="text"
-                    value={editFormData.lastName || ''}
-                    onChange={(e) => setEditFormData({...editFormData, lastName: e.target.value})}
-                    className="w-full px-4 py-2 border border-[#e9ecef] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#a50805]"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-[#624d41] font-medium mb-2">Email</label>
-                  <input
-                    type="email"
-                    value={editFormData.email || ''}
-                    onChange={(e) => setEditFormData({...editFormData, email: e.target.value})}
-                    className="w-full px-4 py-2 border border-[#e9ecef] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#a50805]"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-[#624d41] font-medium mb-2">Contact Number</label>
-                  <input
-                    type="text"
-                    value={editFormData.contactNumber || ''}
-                    onChange={(e) => setEditFormData({...editFormData, contactNumber: e.target.value})}
-                    className="w-full px-4 py-2 border border-[#e9ecef] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#a50805]"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[#624d41] font-medium mb-2">Role</label>
-                  <select
-                    value={editFormData.role || 'donor'}
-                    onChange={(e) => setEditFormData({...editFormData, role: e.target.value})}
-                    className="w-full px-4 py-2 border border-[#e9ecef] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#a50805]"
-                  >
-                    <option value="donor">Donor</option>
-                    <option value="admin">Admin</option>
-                    <option value="organization">Organization</option>
-                  </select>
-                </div>
-              </div>
-              <div className="flex justify-end space-x-4 mt-6">
-                <button
-                  type="button"
-                  onClick={() => setShowUserModal(false)}
-                  className="px-6 py-2 text-[#624d41] border border-[#e9ecef] rounded-lg hover:bg-gray-50 transition-colors"
-                  disabled={editLoading}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-6 py-2 bg-[#a50805] text-white rounded-lg hover:bg-[#d32f2f] transition-colors disabled:opacity-50"
-                  disabled={editLoading}
-                >
-                  {editLoading ? 'Saving...' : 'Save Changes'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <UserModal
+        isOpen={showUserModal && !!selectedUser}
+        onClose={() => {
+          setShowUserModal(false);
+          setSelectedUser(null);
+        }}
+        onSave={handleSaveUserInternal}
+        initialData={selectedUser}
+        loading={editLoading}
+        mode="edit"
+      />
 
       {/* Add User Modal */}
-      {showAddUserModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-8 rounded-xl shadow-2xl max-w-md w-full mx-4">
-            <h3 className="text-xl font-bold text-[#624d41] mb-6">Add New User</h3>
-            <form onSubmit={(e) => {
-              e.preventDefault();
-              handleCreateUserInternal(createFormData);
-            }}>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-[#624d41] font-medium mb-2">First Name</label>
-                  <input
-                    type="text"
-                    value={createFormData.firstName}
-                    onChange={(e) => setCreateFormData({...createFormData, firstName: e.target.value})}
-                    className="w-full px-4 py-2 border border-[#e9ecef] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#a50805]"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-[#624d41] font-medium mb-2">Last Name</label>
-                  <input
-                    type="text"
-                    value={createFormData.lastName}
-                    onChange={(e) => setCreateFormData({...createFormData, lastName: e.target.value})}
-                    className="w-full px-4 py-2 border border-[#e9ecef] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#a50805]"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-[#624d41] font-medium mb-2">Email</label>
-                  <input
-                    type="email"
-                    value={createFormData.email}
-                    onChange={(e) => setCreateFormData({...createFormData, email: e.target.value})}
-                    className="w-full px-4 py-2 border border-[#e9ecef] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#a50805]"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-[#624d41] font-medium mb-2">Contact Number</label>
-                  <input
-                    type="text"
-                    value={createFormData.contactNumber}
-                    onChange={(e) => setCreateFormData({...createFormData, contactNumber: e.target.value})}
-                    className="w-full px-4 py-2 border border-[#e9ecef] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#a50805]"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[#624d41] font-medium mb-2">Password</label>
-                  <input
-                    type="password"
-                    value={createFormData.password}
-                    onChange={(e) => setCreateFormData({...createFormData, password: e.target.value})}
-                    className="w-full px-4 py-2 border border-[#e9ecef] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#a50805]"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-[#624d41] font-medium mb-2">Role</label>
-                  <select
-                    value={createFormData.role}
-                    onChange={(e) => setCreateFormData({...createFormData, role: e.target.value})}
-                    className="w-full px-4 py-2 border border-[#e9ecef] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#a50805]"
-                  >
-                    <option value="donor">Donor</option>
-                    <option value="admin">Admin</option>
-                    <option value="organization">Organization</option>
-                  </select>
-                </div>
-              </div>
-              <div className="flex justify-end space-x-4 mt-6">
-                <button
-                  type="button"
-                  onClick={() => setShowAddUserModal(false)}
-                  className="px-6 py-2 text-[#624d41] border border-[#e9ecef] rounded-lg hover:bg-gray-50 transition-colors"
-                  disabled={createLoading}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-6 py-2 bg-[#a50805] text-white rounded-lg hover:bg-[#d32f2f] transition-colors disabled:opacity-50"
-                  disabled={createLoading}
-                >
-                  {createLoading ? 'Creating...' : 'Create User'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <UserModal
+        isOpen={showAddUserModal}
+        onClose={() => setShowAddUserModal(false)}
+        onSave={handleCreateUserInternal}
+        initialData={{}}
+        loading={createLoading}
+        mode="add"
+      />
     </>
   );
 };

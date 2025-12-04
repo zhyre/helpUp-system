@@ -37,12 +37,12 @@ export const apiRequest = async (endpoint, options = {}) => {
     
     // Handle non-JSON responses
     const contentType = response.headers.get('content-type');
-    const isJson = contentType && contentType.includes('application/json');
+    const isJson = contentType?.includes('application/json');
     
     const data = isJson ? await response.json() : await response.text();
 
     if (!response.ok) {
-      throw new Error(data.message || `HTTP error! status: ${response.status}`);
+      throw new Error(data.message || data || `HTTP error! status: ${response.status}`);
     }
 
     return data;

@@ -1,33 +1,42 @@
 package com.helpup.entity;
 
 import jakarta.persistence.*;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.List;
 
 @Entity
-@Table(name = "user")
+@Table(name = "user") // "user" is reserved in some DBs
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long userID;
-    @Column(name = "first_name")
-    @JsonProperty("first_name")
+    private Long userID;
+
     private String firstName;
-    @Column(name = "last_name")
-    @JsonProperty("last_name")
     private String lastName;
     private String email;
     private String contactNumber;
     private String password;
-    private String role;
+    private String role; // admin, donor, organization
+    private Double walletBalance = 0.0;
 
-    // Getters and setters
+    // One user can have many donations
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<Donation> donations;
 
-    public long getUserID() {
+    // One user can have one organization (if role = organization)
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private Organization organization;
+
+    // Getters and Setters
+
+    public Long getUserID() {
         return userID;
     }
 
-    public void setUserID(long userID) {
+    public void setUserID(Long userID) {
         this.userID = userID;
     }
 
@@ -77,6 +86,14 @@ public class User {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public Double getWalletBalance() {
+        return walletBalance;
+    }
+
+    public void setWalletBalance(Double walletBalance) {
+        this.walletBalance = walletBalance;
     }
 
 }
