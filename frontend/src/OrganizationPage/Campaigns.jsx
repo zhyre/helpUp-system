@@ -155,7 +155,12 @@ const Campaigns = ({
     <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
       {filteredCampaigns.map((campaign) => {
         const progressPercentage = Math.min((campaign.raised / campaign.goal) * 100, 100);
-        const daysLeft = Math.max(0, Math.ceil((new Date(campaign.endDate || '2025-02-15') - new Date()) / (1000 * 60 * 60 * 24)));
+        const endDate = campaign.endDate ? new Date(campaign.endDate) : null;
+        const startDate = campaign.posted ? new Date(campaign.posted) : new Date();
+        const today = new Date();
+        const daysLeft = endDate ? Math.max(0, Math.ceil((endDate - today) / (1000 * 60 * 60 * 24))) : 0;
+        const totalDays = endDate && startDate ? Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) : 0;
+        const daysElapsed = totalDays - daysLeft;
 
         return (
           <div
@@ -169,7 +174,7 @@ const Campaigns = ({
                 <h3 className="text-xl font-bold text-[#624d41] group-hover:text-[#a50805] transition-colors line-clamp-2">
                   {campaign.title}
                 </h3>
-                <span className={`${getStatusColor(campaign.status)} text-white px-3 py-1 rounded-full text-xs font-medium`}>
+                <span className={`${getStatusColor(campaign.status)} text-white px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap`}>
                   {campaign.status}
                 </span>
               </div>
@@ -191,7 +196,7 @@ const Campaigns = ({
             {/* Progress Section */}
             <div className="p-6">
               <div className="flex justify-between text-sm text-[#b6b1b2] mb-2">
-                <span>Progress to ₱{campaign.goal.toLocaleString()}</span>
+                <span>Goal: ₱{campaign.goal.toLocaleString()}</span>
                 <span>{progressPercentage.toFixed(1)}%</span>
               </div>
               <div className="w-full bg-[#e9ecef] rounded-full h-3 mb-4">
@@ -203,59 +208,49 @@ const Campaigns = ({
 
               {/* Campaign Details */}
               <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-[#b6b1b2]">Type:</span>
-                  <span className="text-[#624d41] font-medium">{campaign.type}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-[#b6b1b2]">Period:</span>
-                  <span className="text-[#624d41] font-medium">{campaign.period}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-[#b6b1b2]">Days Left:</span>
-                  <span className={`font-medium ${daysLeft <= 7 ? 'text-[#d32f2f]' : daysLeft <= 30 ? 'text-[#ff9800]' : 'text-[#4caf50]'}`}>
-                    {daysLeft}
+                <div className="flex justify-between items-center">
+                  <span className="text-[#b6b1b2] flex items-center gap-1">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    Started:
+                  </span>
+                  <span className="text-[#624d41] font-medium">
+                    {startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                   </span>
                 </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="mt-6 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    navigate(`/organization/campaign/${campaign.id}`);
-                  }}
-                  className="flex-1 bg-gradient-to-r from-[#a50805] to-[#d32f2f] text-white py-2 px-4 rounded-lg hover:from-[#d32f2f] hover:to-[#a50805] transition-all duration-200 text-sm font-medium flex items-center justify-center space-x-1 shadow-md hover:shadow-lg transform hover:scale-105"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                  </svg>
-                  <span>View</span>
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onEditCampaign(campaign);
-                  }}
-                  className="bg-gradient-to-r from-[#2196f3] to-[#42a5f5] text-white py-2 px-3 rounded-lg hover:from-[#42a5f5] hover:to-[#2196f3] transition-all duration-200 text-sm font-medium shadow-md hover:shadow-lg transform hover:scale-105"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                  </svg>
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDeleteCampaign(campaign.id);
-                  }}
-                  className="bg-gradient-to-r from-[#d32f2f] to-[#a50805] text-white py-2 px-3 rounded-lg hover:from-[#a50805] hover:to-[#d32f2f] transition-all duration-200 text-sm font-medium shadow-md hover:shadow-lg transform hover:scale-105"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                  </svg>
-                </button>
+                <div className="flex justify-between items-center">
+                  <span className="text-[#b6b1b2] flex items-center gap-1">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Days Left:
+                  </span>
+                  <span className={`font-medium ${daysLeft <= 7 ? 'text-[#d32f2f]' : daysLeft <= 30 ? 'text-[#ff9800]' : 'text-[#4caf50]'}`}>
+                    {daysLeft} {daysLeft === 1 ? 'day' : 'days'}
+                  </span>
+                </div>
+                {endDate && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-[#b6b1b2] flex items-center gap-1">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                      </svg>
+                      Ends:
+                    </span>
+                    <span className="text-[#624d41] font-medium">
+                      {endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </span>
+                  </div>
+                )}
+                {totalDays > 0 && (
+                  <div className="pt-2 border-t border-gray-200">
+                    <div className="flex justify-between text-xs text-[#b6b1b2] mb-1">
+                      <span>Duration: {totalDays} days</span>
+                      <span>{daysElapsed} days elapsed</span>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Hover Indicator */}
@@ -275,18 +270,18 @@ const Campaigns = ({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path>
           </svg>
           <h3 className="text-2xl font-bold text-[#624d41] mb-3">
-            {searchTerm || statusFilter !== 'All' ? 'No campaigns found' : 'No campaigns yet'}
+            {searchTerm || statusFilter !== 'All' ? 'No campaigns found' : 'No campaigns yet for this organization'}
           </h3>
           <p className="text-[#b6b1b2] mb-6">
             {searchTerm || statusFilter !== 'All'
               ? 'Try adjusting your search or filters to find what you\'re looking for.'
-              : 'Start by creating your first campaign to help your community.'
+              : 'This organization hasn\'t created any campaigns yet. Start by creating your first campaign to help your community.'
             }
           </p>
           {(!searchTerm && statusFilter === 'All') && (
             <button
               onClick={onCreateCampaign}
-              className="bg-gradient-to-r from-[#a50805] to-[#d32f2f] text-white px-8 py-4 rounded-xl hover:from-[#d32f2f] hover:to-[#a50805] transition-all duration-300 font-medium flex items-center space-x-2 shadow-lg hover:shadow-xl transform hover:scale-105"
+              className="bg-gradient-to-r from-[#a50805] to-[#d32f2f] text-white px-8 py-4 rounded-xl hover:from-[#d32f2f] hover:to-[#a50805] transition-all duration-300 font-medium inline-flex items-center space-x-2 shadow-lg hover:shadow-xl transform hover:scale-105 mx-auto"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>

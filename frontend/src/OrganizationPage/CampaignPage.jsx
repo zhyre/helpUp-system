@@ -1,30 +1,153 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import TopNavbar from "../components/TopNavbar.jsx";
+import { getCampaignById, updateCampaign, deleteCampaign } from '../services/campaignService';
 
 const CampaignPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
+  const [campaign, setCampaign] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    targetAmount: '',
+    endDate: '',
+    startDate: '',
+    organization: null // Add organization to state
+  });
 
-  // Mock campaign data - in real app, this would be fetched based on ID
-  const campaign = {
-    id: parseInt(id),
-    title: 'Fire Recovery Support',
-    description: 'Help families recover from the recent fire incident in our community. This campaign aims to provide immediate relief and long-term support for rebuilding homes and lives.',
-    goal: 50000,
-    raised: 35000,
+  // Fetch campaign data on component mount
+  useEffect(() => {
+    const fetchCampaign = async () => {
+      try {
+        setLoading(true);
+        const data = await getCampaignById(id);
+        setCampaign(data);
+        setFormData({
+          name: data.name || '',
+          description: data.description || '',
+          targetAmount: data.targetAmount || '',
+          endDate: data.endDate || '',
+          startDate: data.startDate || '',
+          organization: data.organization // Preserve organization
+        });
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching campaign:', err);
+        setError('Failed to load campaign. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchCampaign();
+    }
+  }, [id]);
+
+  // Handle form input changes
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  // Handle campaign update
+  const handleUpdateCampaign = async () => {
+    try {
+      setLoading(true);
+      const updatedCampaign = await updateCampaign(id, formData);
+      setCampaign(updatedCampaign);
+      alert('Campaign updated successfully!');
+    } catch (err) {
+      console.error('Error updating campaign:', err);
+      alert('Failed to update campaign. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle campaign delete
+  const handleDeleteCampaign = async () => {
+    if (globalThis.confirm('Are you sure you want to delete this campaign? This action cannot be undone.')) {
+      try {
+        setLoading(true);
+        await deleteCampaign(id);
+        alert('Campaign deleted successfully!');
+        navigate('/organization');
+      } catch (err) {
+        console.error('Error deleting campaign:', err);
+        alert('Failed to delete campaign. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  // Show loading state
+  if (loading && !campaign) {
+    return (
+      <>
+        <TopNavbar user={user} />
+        <div className="min-h-screen bg-white flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-[#a50805] mx-auto"></div>
+            <p className="mt-4 text-[#624d41] text-lg">Loading campaign...</p>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  // Show error state
+  if (error && !campaign) {
+    return (
+      <>
+        <TopNavbar user={user} />
+        <div className="min-h-screen bg-white flex items-center justify-center">
+          <div className="text-center">
+            <div className="text-[#f44336] text-6xl mb-4">⚠️</div>
+            <p className="text-[#624d41] text-xl font-semibold mb-2">Error Loading Campaign</p>
+            <p className="text-[#b6b1b2] mb-4">{error}</p>
+            <button
+              onClick={() => navigate('/organization')}
+              className="bg-[#a50805] text-white px-6 py-2 rounded-lg hover:bg-[#d32f2f] transition-colors"
+            >
+              Back to Organization
+            </button>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  // Return null if no campaign data
+  if (!campaign) {
+    return null;
+  }
+
+  // Mock data for display (until backend provides these)
+  const displayData = {
+    title: campaign.name || 'Untitled Campaign',
+    description: campaign.description || 'No description provided',
+    goal: campaign.targetAmount || 0,
+    raised: 0, // Would come from donations sum
     type: 'Relief',
-    location: 'Barangay San Antonio',
+    location: 'Location TBD',
     period: '3 months',
     status: 'Active',
-    posted: '2024-11-15',
-    endDate: '2025-02-15',
-    category: 'Disaster Relief',
+    posted: campaign.startDate || new Date().toISOString().split('T')[0],
+    endDate: campaign.endDate || new Date().toISOString().split('T')[0],
+    category: 'General',
     targetBeneficiaries: 50,
-    currentBeneficiaries: 35
+    currentBeneficiaries: 0
   };
 
   // Mock donor data
@@ -57,13 +180,46 @@ const CampaignPage = () => {
     }
   };
 
-  const progressPercentage = Math.min((campaign.raised / campaign.goal) * 100, 100);
+  const progressPercentage = Math.min((displayData.raised / displayData.goal) * 100, 100);
 
   const tabs = [
-    { id: 'overview', name: 'Overview', icon: '📊' },
-    { id: 'donors', name: 'Donors', icon: '👥' },
-    { id: 'analytics', name: 'Analytics', icon: '📈' },
-    { id: 'settings', name: 'Settings', icon: '⚙️' }
+    { 
+      id: 'overview', 
+      name: 'Overview',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+        </svg>
+      )
+    },
+    { 
+      id: 'donors', 
+      name: 'Donors',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+        </svg>
+      )
+    },
+    { 
+      id: 'analytics', 
+      name: 'Analytics',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+        </svg>
+      )
+    },
+    { 
+      id: 'settings', 
+      name: 'Settings',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+        </svg>
+      )
+    }
   ];
 
   const renderOverview = () => (
@@ -75,20 +231,20 @@ const CampaignPage = () => {
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
             <div className="flex-1">
               <div className="flex items-center gap-4 mb-4">
-                <h1 className="text-3xl font-bold">{campaign.title}</h1>
-                <span className={`${getStatusColor(campaign.status)} text-white px-4 py-2 rounded-full text-sm font-medium`}>
-                  {campaign.status}
+                <h1 className="text-3xl font-bold">{displayData.title}</h1>
+                <span className={`${getStatusColor(displayData.status)} text-white px-4 py-2 rounded-full text-sm font-medium`}>
+                  {displayData.status}
                 </span>
               </div>
-              <p className="text-white/90 text-lg mb-4">{campaign.description}</p>
+              <p className="text-white/90 text-lg mb-4">{displayData.description}</p>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                 <div className="bg-white/10 rounded-lg p-3">
                   <div className="text-white/70">Goal</div>
-                  <div className="text-xl font-bold">₱{campaign.goal.toLocaleString()}</div>
+                  <div className="text-xl font-bold">₱{displayData.goal.toLocaleString()}</div>
                 </div>
                 <div className="bg-white/10 rounded-lg p-3">
                   <div className="text-white/70">Raised</div>
-                  <div className="text-xl font-bold">₱{campaign.raised.toLocaleString()}</div>
+                  <div className="text-xl font-bold">₱{displayData.raised.toLocaleString()}</div>
                 </div>
                 <div className="bg-white/10 rounded-lg p-3">
                   <div className="text-white/70">Progress</div>
@@ -97,7 +253,7 @@ const CampaignPage = () => {
                 <div className="bg-white/10 rounded-lg p-3">
                   <div className="text-white/70">Days Left</div>
                   <div className="text-xl font-bold">
-                    {Math.max(0, Math.ceil((new Date(campaign.endDate) - new Date()) / (1000 * 60 * 60 * 24)))}
+                    {Math.max(0, Math.ceil((new Date(displayData.endDate) - Date.now()) / (1000 * 60 * 60 * 24)))}
                   </div>
                 </div>
               </div>
@@ -112,8 +268,8 @@ const CampaignPage = () => {
         <div className="space-y-6">
           <div>
             <div className="flex justify-between text-sm text-[#b6b1b2] mb-2">
-              <span>₱{campaign.raised.toLocaleString()} raised</span>
-              <span>₱{campaign.goal.toLocaleString()} goal</span>
+              <span>₱{displayData.raised.toLocaleString()} raised</span>
+              <span>₱{displayData.goal.toLocaleString()} goal</span>
             </div>
             <div className="w-full bg-[#e9ecef] rounded-full h-4">
               <div
@@ -129,9 +285,9 @@ const CampaignPage = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="text-center p-4 bg-gradient-to-br from-[#a50805]/5 to-[#a50805]/10 rounded-lg">
-              <div className="text-3xl font-bold text-[#a50805] mb-2">{campaign.currentBeneficiaries}</div>
+              <div className="text-3xl font-bold text-[#a50805] mb-2">{displayData.currentBeneficiaries}</div>
               <div className="text-[#624d41] font-medium">Families Helped</div>
-              <div className="text-[#b6b1b2] text-sm">out of {campaign.targetBeneficiaries} targeted</div>
+              <div className="text-[#b6b1b2] text-sm">out of {displayData.targetBeneficiaries} targeted</div>
             </div>
             <div className="text-center p-4 bg-gradient-to-br from-[#4caf50]/5 to-[#4caf50]/10 rounded-lg">
               <div className="text-3xl font-bold text-[#4caf50] mb-2">{analytics.totalDonations}</div>
@@ -152,29 +308,58 @@ const CampaignPage = () => {
         <div className="bg-gradient-to-br from-white to-[#f8f9fa] p-6 rounded-xl border border-[#e9ecef] shadow-md">
           <h3 className="text-xl font-bold text-[#624d41] mb-4">Campaign Details</h3>
           <div className="space-y-3">
-            <div className="flex justify-between">
-              <span className="text-[#b6b1b2]">Type:</span>
-              <span className="text-[#624d41] font-medium">{campaign.type}</span>
+            <div className="flex justify-between items-center">
+              <span className="text-[#b6b1b2] flex items-center gap-2">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                </svg>
+                Target Amount:
+              </span>
+              <span className="text-[#624d41] font-medium">₱{displayData.goal.toLocaleString()}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-[#b6b1b2]">Location:</span>
-              <span className="text-[#624d41] font-medium">{campaign.location}</span>
+            <div className="flex justify-between items-center">
+              <span className="text-[#b6b1b2] flex items-center gap-2">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+                Start Date:
+              </span>
+              <span className="text-[#624d41] font-medium">
+                {new Date(displayData.posted).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+              </span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-[#b6b1b2]">Duration:</span>
-              <span className="text-[#624d41] font-medium">{campaign.period}</span>
+            <div className="flex justify-between items-center">
+              <span className="text-[#b6b1b2] flex items-center gap-2">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                End Date:
+              </span>
+              <span className="text-[#624d41] font-medium">
+                {new Date(displayData.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+              </span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-[#b6b1b2]">Category:</span>
-              <span className="text-[#624d41] font-medium">{campaign.category}</span>
+            <div className="flex justify-between items-center pt-2 border-t border-gray-200">
+              <span className="text-[#b6b1b2] flex items-center gap-2">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                Duration:
+              </span>
+              <span className="text-[#624d41] font-medium">
+                {Math.ceil((new Date(displayData.endDate) - new Date(displayData.posted)) / (1000 * 60 * 60 * 24))} days
+              </span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-[#b6b1b2]">Posted:</span>
-              <span className="text-[#624d41] font-medium">{new Date(campaign.posted).toLocaleDateString()}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-[#b6b1b2]">End Date:</span>
-              <span className="text-[#624d41] font-medium">{new Date(campaign.endDate).toLocaleDateString()}</span>
+            <div className="flex justify-between items-center">
+              <span className="text-[#b6b1b2] flex items-center gap-2">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                </svg>
+                Status:
+              </span>
+              <span className="text-[#624d41] font-medium">
+                {displayData.status}
+              </span>
             </div>
           </div>
         </div>
@@ -213,50 +398,111 @@ const CampaignPage = () => {
 
   const renderDonors = () => (
     <div className="space-y-8">
+      {/* Header Section */}
       <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-6">
         <div>
           <h1 className="text-3xl font-bold text-[#624d41]">Campaign Donors</h1>
-          <p className="text-[#b6b1b2] mt-2">Supporters who made this campaign possible</p>
+          <p className="text-[#b6b1b2] mt-2">Thank you to all our generous supporters</p>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="bg-gradient-to-br from-white to-[#f8f9fa] px-4 py-3 rounded-lg border border-[#e9ecef] shadow-sm">
-            <div className="text-2xl font-bold text-[#a50805]">{analytics.totalDonations}</div>
-            <div className="text-xs text-[#b6b1b2] uppercase tracking-wide">Total Donors</div>
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="bg-gradient-to-br from-[#a50805] to-[#d32f2f] px-6 py-3 rounded-xl shadow-md text-white">
+            <div className="text-2xl font-bold">{analytics.totalDonations}</div>
+            <div className="text-xs uppercase tracking-wide opacity-90">Total Donors</div>
           </div>
-          <div className="bg-gradient-to-br from-white to-[#f8f9fa] px-4 py-3 rounded-lg border border-[#e9ecef] shadow-sm">
-            <div className="text-2xl font-bold text-[#4caf50]">₱{campaign.raised.toLocaleString()}</div>
-            <div className="text-xs text-[#b6b1b2] uppercase tracking-wide">Total Raised</div>
+          <div className="bg-gradient-to-br from-[#4caf50] to-[#66bb6a] px-6 py-3 rounded-xl shadow-md text-white">
+            <div className="text-2xl font-bold">₱{displayData.raised.toLocaleString()}</div>
+            <div className="text-xs uppercase tracking-wide opacity-90">Total Raised</div>
+          </div>
+          <div className="bg-gradient-to-br from-[#ff9800] to-[#ffa726] px-6 py-3 rounded-xl shadow-md text-white">
+            <div className="text-2xl font-bold">₱{analytics.averageDonation.toFixed(0)}</div>
+            <div className="text-xs uppercase tracking-wide opacity-90">Average Gift</div>
           </div>
         </div>
       </div>
 
-      <div className="bg-gradient-to-br from-white to-[#f8f9fa] rounded-xl border border-[#e9ecef] shadow-md overflow-hidden">
-        <div className="p-6 border-b border-[#e9ecef]">
-          <h2 className="text-xl font-bold text-[#624d41]">Donor List</h2>
+      {/* Top Donors Highlight */}
+      <div className="bg-gradient-to-br from-white to-[#f8f9fa] rounded-xl border border-[#e9ecef] shadow-md p-6">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="bg-[#ffd700] p-2 rounded-lg">
+            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
+            </svg>
+          </div>
+          <h2 className="text-xl font-bold text-[#624d41]">Top Contributors</h2>
         </div>
-        <div className="divide-y divide-[#e9ecef]">
-          {donors.map((donor) => (
-            <div key={donor.id} className="p-6 hover:bg-gray-50 transition-colors duration-200">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-[#a50805] rounded-full flex items-center justify-center text-white font-bold text-lg">
-                    {donor.name.charAt(0)}
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-[#624d41]">{donor.name}</h3>
-                    <p className="text-[#b6b1b2]">{new Date(donor.date).toLocaleDateString()}</p>
-                  </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {donors.slice(0, 3).map((donor, index) => (
+            <div key={donor.id} className="relative bg-white p-5 rounded-xl border-2 border-[#e9ecef] hover:border-[#a50805] transition-all duration-300 hover:shadow-lg">
+              <div className="absolute -top-3 -right-3 w-8 h-8 bg-gradient-to-br from-[#ffd700] to-[#ffed4e] rounded-full flex items-center justify-center text-[#624d41] font-bold text-sm shadow-md">
+                #{index + 1}
+              </div>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-14 h-14 bg-gradient-to-br from-[#a50805] to-[#d32f2f] rounded-full flex items-center justify-center text-white font-bold text-xl shadow-md">
+                  {donor.name.charAt(0)}
                 </div>
-                <div className="text-right">
-                  <div className="text-2xl font-bold text-[#a50805]">₱{donor.amount.toLocaleString()}</div>
-                  <div className="text-[#b6b1b2] text-sm">One-time donation</div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-[#624d41] truncate">{donor.name}</h3>
+                  <p className="text-[#b6b1b2] text-sm">{new Date(donor.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
                 </div>
               </div>
-              {donor.message && (
-                <div className="mt-4 p-3 bg-[#f8f9fa] rounded-lg">
-                  <p className="text-[#624d41] italic">"{donor.message}"</p>
+              <div className="flex items-center justify-between pt-3 border-t border-[#e9ecef]">
+                <span className="text-[#b6b1b2] text-sm">Donated</span>
+                <span className="text-2xl font-bold text-[#a50805]">₱{donor.amount.toLocaleString()}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* All Donors List */}
+      <div className="bg-white rounded-xl border border-[#e9ecef] shadow-md overflow-hidden">
+        <div className="bg-gradient-to-r from-[#a50805] to-[#d32f2f] p-6">
+          <h2 className="text-xl font-bold text-white flex items-center gap-2">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+            </svg>
+            All Donors ({donors.length})
+          </h2>
+        </div>
+        <div className="divide-y divide-[#e9ecef]">
+          {donors.map((donor, index) => (
+            <div key={donor.id} className="p-6 hover:bg-[#f8f9fa] transition-all duration-200 group">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex items-start gap-4 flex-1">
+                  <div className="relative">
+                    <div className="w-14 h-14 bg-gradient-to-br from-[#a50805] to-[#d32f2f] rounded-full flex items-center justify-center text-white font-bold text-xl shadow-md group-hover:scale-110 transition-transform duration-300">
+                      {donor.name.charAt(0)}
+                    </div>
+                    <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-[#4caf50] rounded-full border-2 border-white flex items-center justify-center">
+                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                      </svg>
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="text-lg font-semibold text-[#624d41]">{donor.name}</h3>
+                      {index < 3 && (
+                        <span className="px-2 py-1 bg-[#ffd700] bg-opacity-20 text-[#ffa000] text-xs font-semibold rounded-full">
+                          Top Supporter
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[#b6b1b2] text-sm">
+                      {new Date(donor.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                    </p>
+                  </div>
                 </div>
-              )}
+                <div className="text-right ml-4 flex flex-col items-end">
+                  <div className="text-3xl font-bold text-[#a50805] mb-1">₱{donor.amount.toLocaleString()}</div>
+                  <div className="inline-flex items-center gap-1 px-3 py-1 bg-[#4caf50] bg-opacity-10 text-[#4caf50] rounded-full text-xs font-semibold">
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Verified
+                  </div>
+                </div>
+              </div>
             </div>
           ))}
         </div>
@@ -302,7 +548,7 @@ const CampaignPage = () => {
               +{analytics.weeklyGrowth}%
             </div>
           </div>
-          <div className="text-3xl font-bold text-[#a50805] mb-2">₱{campaign.raised.toLocaleString()}</div>
+          <div className="text-3xl font-bold text-[#a50805] mb-2">₱{displayData.raised.toLocaleString()}</div>
           <p className="text-[#624d41] font-medium">Total Funds Raised</p>
           <p className="text-[#b6b1b2] text-sm">This week: +₱{analytics.dailyAverage * 7}</p>
         </div>
@@ -399,13 +645,13 @@ const CampaignPage = () => {
             <div className="flex justify-between items-center">
               <span className="text-[#b6b1b2]">Days Active</span>
               <span className="text-[#624d41] font-bold">
-                {Math.ceil((new Date() - new Date(campaign.posted)) / (1000 * 60 * 60 * 24))}
+                {Math.ceil((Date.now() - new Date(displayData.posted).getTime()) / (1000 * 60 * 60 * 24))}
               </span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-[#b6b1b2]">Days Remaining</span>
               <span className="text-[#ff9800] font-bold">
-                {Math.max(0, Math.ceil((new Date(campaign.endDate) - new Date()) / (1000 * 60 * 60 * 24)))}
+                {Math.max(0, Math.ceil((new Date(displayData.endDate) - Date.now()) / (1000 * 60 * 60 * 24)))}
               </span>
             </div>
             <div className="flex justify-between items-center">
@@ -420,122 +666,326 @@ const CampaignPage = () => {
 
   const renderSettings = () => (
     <div className="space-y-8">
-      <h1 className="text-4xl font-bold text-[#624d41] mb-8">Campaign Settings</h1>
+      {/* Header Section */}
+      <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-[#624d41]">Campaign Settings</h1>
+          <p className="text-[#b6b1b2] mt-2">Manage your campaign details and preferences</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="px-4 py-2 bg-[#4caf50] bg-opacity-10 text-[#4caf50] rounded-lg font-medium text-sm flex items-center gap-2">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            {displayData.status}
+          </span>
+        </div>
+      </div>
 
-      <div className="space-y-6">
-        {/* Campaign Details */}
-        <div className="bg-gradient-to-br from-white to-[#f8f9fa] p-8 rounded-xl border border-[#e9ecef] shadow-md">
-          <h2 className="text-2xl font-semibold text-[#624d41] mb-6">Campaign Information</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-[#624d41] font-medium mb-2">Campaign Title</label>
-              <input
-                type="text"
-                defaultValue={campaign.title}
-                className="w-full px-4 py-2 border border-[#e9ecef] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#a50805] transition-all duration-200"
-              />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Main Settings Column */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Basic Information */}
+          <div className="bg-white p-6 rounded-xl border border-[#e9ecef] shadow-sm hover:shadow-md transition-shadow duration-300">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="bg-[#a50805] bg-opacity-10 p-2 rounded-lg">
+                <svg className="w-5 h-5 text-[#a50805]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+              </div>
+              <h2 className="text-xl font-semibold text-[#624d41]">Basic Information</h2>
             </div>
-            <div>
-              <label className="block text-[#624d41] font-medium mb-2">Campaign Type</label>
-              <select className="w-full px-4 py-2 border border-[#e9ecef] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#a50805] bg-white">
-                <option>Relief</option>
-                <option>Reconstruction</option>
-                <option>Education</option>
-                <option>Health</option>
-                <option>Community</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-[#624d41] font-medium mb-2">Goal Amount (₱)</label>
-              <input
-                type="number"
-                defaultValue={campaign.goal}
-                className="w-full px-4 py-2 border border-[#e9ecef] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#a50805] transition-all duration-200"
-              />
-            </div>
-            <div>
-              <label className="block text-[#624d41] font-medium mb-2">End Date</label>
-              <input
-                type="date"
-                defaultValue={campaign.endDate}
-                className="w-full px-4 py-2 border border-[#e9ecef] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#a50805] transition-all duration-200"
-              />
+            <div className="space-y-5">
+              <div>
+                <label htmlFor="name" className="block text-[#624d41] font-medium mb-2 text-sm">
+                  Campaign Title <span className="text-red-500">*</span>
+                </label>
+                <input
+                  id="name"
+                  name="name"
+                  type="text"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  placeholder="Enter campaign title"
+                  className="w-full px-4 py-3 border border-[#e9ecef] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#a50805] focus:border-transparent transition-all duration-200 bg-white"
+                />
+              </div>
+              <div>
+                <label htmlFor="description" className="block text-[#624d41] font-medium mb-2 text-sm">
+                  Campaign Description <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  id="description"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  rows="5"
+                  placeholder="Describe your campaign's purpose and goals..."
+                  className="w-full px-4 py-3 border border-[#e9ecef] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#a50805] focus:border-transparent transition-all duration-200 resize-none bg-white"
+                />
+                <p className="text-[#b6b1b2] text-xs mt-2">{formData.description.length} characters</p>
+              </div>
             </div>
           </div>
-          <div className="mt-6">
-            <label className="block text-[#624d41] font-medium mb-2">Campaign Description</label>
-            <textarea
-              defaultValue={campaign.description}
-              rows="4"
-              className="w-full px-4 py-2 border border-[#e9ecef] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#a50805] transition-all duration-200 resize-none"
-            />
+
+          {/* Financial Settings */}
+          <div className="bg-white p-6 rounded-xl border border-[#e9ecef] shadow-sm hover:shadow-md transition-shadow duration-300">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="bg-[#4caf50] bg-opacity-10 p-2 rounded-lg">
+                <svg className="w-5 h-5 text-[#4caf50]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                </svg>
+              </div>
+              <h2 className="text-xl font-semibold text-[#624d41]">Financial Goal</h2>
+            </div>
+            <div>
+              <label htmlFor="targetAmount" className="block text-[#624d41] font-medium mb-2 text-sm">
+                Target Amount (₱) <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#b6b1b2] font-medium">₱</span>
+                <input
+                  id="targetAmount"
+                  name="targetAmount"
+                  type="number"
+                  min="0"
+                  step="100"
+                  value={formData.targetAmount}
+                  onChange={handleInputChange}
+                  placeholder="0.00"
+                  className="w-full pl-10 pr-4 py-3 border border-[#e9ecef] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#a50805] focus:border-transparent transition-all duration-200 bg-white"
+                />
+              </div>
+              <p className="text-[#b6b1b2] text-xs mt-2">Current progress: ₱{displayData.raised.toLocaleString()} ({progressPercentage.toFixed(1)}%)</p>
+            </div>
+          </div>
+
+          {/* Campaign Timeline */}
+          <div className="bg-white p-6 rounded-xl border border-[#e9ecef] shadow-sm hover:shadow-md transition-shadow duration-300">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="bg-[#2196f3] bg-opacity-10 p-2 rounded-lg">
+                <svg className="w-5 h-5 text-[#2196f3]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+              </div>
+              <h2 className="text-xl font-semibold text-[#624d41]">Campaign Timeline</h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div>
+                <label htmlFor="startDate" className="block text-[#624d41] font-medium mb-2 text-sm">
+                  Start Date <span className="text-red-500">*</span>
+                </label>
+                <input
+                  id="startDate"
+                  name="startDate"
+                  type="date"
+                  value={formData.startDate}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 border border-[#e9ecef] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#a50805] focus:border-transparent transition-all duration-200 bg-white"
+                />
+              </div>
+              <div>
+                <label htmlFor="endDate" className="block text-[#624d41] font-medium mb-2 text-sm">
+                  End Date <span className="text-red-500">*</span>
+                </label>
+                <input
+                  id="endDate"
+                  name="endDate"
+                  type="date"
+                  value={formData.endDate}
+                  onChange={handleInputChange}
+                  min={formData.startDate}
+                  className="w-full px-4 py-3 border border-[#e9ecef] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#a50805] focus:border-transparent transition-all duration-200 bg-white"
+                />
+              </div>
+            </div>
+            <div className="mt-4 p-4 bg-[#f8f9fa] rounded-lg">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-[#b6b1b2]">Campaign Duration:</span>
+                <span className="text-[#624d41] font-medium">
+                  {Math.ceil((new Date(formData.endDate) - new Date(formData.startDate)) / (1000 * 60 * 60 * 24))} days
+                </span>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Campaign Status */}
-        <div className="bg-gradient-to-br from-white to-[#f8f9fa] p-8 rounded-xl border border-[#e9ecef] shadow-md">
-          <h2 className="text-2xl font-semibold text-[#624d41] mb-6">Campaign Status</h2>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 rounded-lg hover:bg-gray-50 transition-colors">
-              <div className="flex items-center space-x-4">
-                <div className="bg-[#4caf50] p-2 rounded-full">
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-[#624d41] font-medium">Active</h3>
-                  <p className="text-[#b6b1b2] text-sm">Campaign is currently accepting donations</p>
-                </div>
+        {/* Sidebar - Campaign Status & Quick Stats */}
+        <div className="space-y-6">
+          {/* Campaign Status */}
+          <div className="bg-white p-6 rounded-xl border border-[#e9ecef] shadow-sm hover:shadow-md transition-shadow duration-300">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="bg-[#ff9800] bg-opacity-10 p-2 rounded-lg">
+                <svg className="w-5 h-5 text-[#ff9800]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
               </div>
-              <input type="radio" name="status" value="Active" defaultChecked className="w-5 h-5 text-[#a50805] focus:ring-[#a50805]" />
+              <h2 className="text-xl font-semibold text-[#624d41]">Campaign Status</h2>
             </div>
-            <div className="flex items-center justify-between p-4 rounded-lg hover:bg-gray-50 transition-colors">
-              <div className="flex items-center space-x-4">
-                <div className="bg-[#ff9800] p-2 rounded-full">
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 9v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                  </svg>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-4 rounded-lg border-2 border-[#4caf50] bg-[#4caf50] bg-opacity-5 transition-all duration-200 cursor-pointer hover:shadow-md">
+                <div className="flex items-center gap-3">
+                  <div className="bg-[#4caf50] p-2 rounded-lg">
+                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-[#624d41] font-semibold text-sm">Active</h3>
+                    <p className="text-[#b6b1b2] text-xs">Accepting donations</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-[#624d41] font-medium">Paused</h3>
-                  <p className="text-[#b6b1b2] text-sm">Temporarily stop accepting donations</p>
-                </div>
+                <input type="radio" name="status" value="Active" defaultChecked className="w-4 h-4 text-[#a50805] focus:ring-[#a50805]" />
               </div>
-              <input type="radio" name="status" value="Paused" className="w-5 h-5 text-[#a50805] focus:ring-[#a50805]" />
+              
+              <div className="flex items-center justify-between p-4 rounded-lg border border-[#e9ecef] hover:border-[#ff9800] hover:bg-[#ff9800] hover:bg-opacity-5 transition-all duration-200 cursor-pointer">
+                <div className="flex items-center gap-3">
+                  <div className="bg-[#ff9800] p-2 rounded-lg">
+                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-[#624d41] font-semibold text-sm">Paused</h3>
+                    <p className="text-[#b6b1b2] text-xs">Temporarily stopped</p>
+                  </div>
+                </div>
+                <input type="radio" name="status" value="Paused" className="w-4 h-4 text-[#a50805] focus:ring-[#a50805]" />
+              </div>
+              
+              <div className="flex items-center justify-between p-4 rounded-lg border border-[#e9ecef] hover:border-[#f44336] hover:bg-[#f44336] hover:bg-opacity-5 transition-all duration-200 cursor-pointer">
+                <div className="flex items-center gap-3">
+                  <div className="bg-[#f44336] p-2 rounded-lg">
+                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-[#624d41] font-semibold text-sm">Completed</h3>
+                    <p className="text-[#b6b1b2] text-xs">Campaign ended</p>
+                  </div>
+                </div>
+                <input type="radio" name="status" value="Completed" className="w-4 h-4 text-[#a50805] focus:ring-[#a50805]" />
+              </div>
             </div>
-            <div className="flex items-center justify-between p-4 rounded-lg hover:bg-gray-50 transition-colors">
-              <div className="flex items-center space-x-4">
-                <div className="bg-[#f44336] p-2 rounded-full">
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-[#624d41] font-medium">Cancelled</h3>
-                  <p className="text-[#b6b1b2] text-sm">Permanently close the campaign</p>
-                </div>
+          </div>
+
+          {/* Quick Stats */}
+          <div className="bg-gradient-to-br from-[#a50805] to-[#d32f2f] p-6 rounded-xl shadow-lg text-white">
+            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+              </svg>
+              Quick Stats
+            </h3>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center py-2 border-b border-white border-opacity-20">
+                <span className="text-white text-opacity-90 text-sm">Total Raised</span>
+                <span className="font-bold">₱{displayData.raised.toLocaleString()}</span>
               </div>
-              <input type="radio" name="status" value="Cancelled" className="w-5 h-5 text-[#a50805] focus:ring-[#a50805]" />
+              <div className="flex justify-between items-center py-2 border-b border-white border-opacity-20">
+                <span className="text-white text-opacity-90 text-sm">Total Donors</span>
+                <span className="font-bold">{analytics.totalDonations}</span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-white border-opacity-20">
+                <span className="text-white text-opacity-90 text-sm">Days Remaining</span>
+                <span className="font-bold">
+                  {Math.max(0, Math.ceil((new Date(displayData.endDate) - Date.now()) / (1000 * 60 * 60 * 24)))}
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-2">
+                <span className="text-white text-opacity-90 text-sm">Progress</span>
+                <span className="font-bold">{progressPercentage.toFixed(1)}%</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Danger Zone */}
+          <div className="bg-gradient-to-br from-red-50 to-red-100 p-6 rounded-xl border-2 border-red-200 shadow-sm">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="bg-red-600 p-2 rounded-lg">
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                </svg>
+              </div>
+              <h2 className="text-xl font-semibold text-red-600">Danger Zone</h2>
+            </div>
+            <div className="bg-white p-5 rounded-lg">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-[#624d41] mb-1">Delete Campaign</h3>
+                </div>
+                <button
+                  onClick={handleDeleteCampaign}
+                  disabled={loading}
+                  className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all duration-300 font-medium disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap flex items-center gap-2 shadow-md hover:shadow-lg"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                  </svg>
+                  Delete Campaign
+                </button>
+              </div>
             </div>
           </div>
         </div>
+      </div>
 
-        <div className="flex justify-between">
+      {/* Action Buttons */}
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-6 border-t border-[#e9ecef]">
+        <button
+          onClick={() => navigate('/organization')}
+          className="px-6 py-3 text-[#624d41] border-2 border-[#e9ecef] rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all duration-300 font-medium flex items-center gap-2 w-full sm:w-auto justify-center"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+          </svg>
+          Back to Organization
+        </button>
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
           <button
-            onClick={() => navigate('/organization')}
-            className="px-6 py-3 text-[#624d41] border border-[#e9ecef] rounded-lg hover:bg-gray-50 transition-colors font-medium"
+            onClick={() => {
+              if (campaign) {
+                setFormData({
+                  name: campaign.name,
+                  description: campaign.description,
+                  targetAmount: campaign.targetAmount,
+                  startDate: campaign.startDate,
+                  endDate: campaign.endDate,
+                  organization: campaign.organization
+                });
+              }
+            }}
+            disabled={loading}
+            className="px-6 py-3 text-[#624d41] border-2 border-[#e9ecef] rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all duration-300 font-medium disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto flex items-center gap-2 justify-center"
           >
-            ← Back to Organization
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+            </svg>
+            Reset Changes
           </button>
-          <div className="flex space-x-4">
-            <button className="px-6 py-3 bg-[#ff9800] text-white rounded-lg hover:bg-[#ffb74d] transition-colors font-medium">
-              Save Draft
-            </button>
-            <button className="px-6 py-3 bg-[#a50805] text-white rounded-lg hover:bg-[#d32f2f] transition-colors font-medium">
-              Save Changes
-            </button>
-          </div>
+          <button
+            onClick={handleUpdateCampaign}
+            disabled={loading}
+            className="px-8 py-3 bg-gradient-to-r from-[#4caf50] to-[#66bb6a] text-white rounded-lg hover:from-[#66bb6a] hover:to-[#4caf50] transition-all duration-300 font-medium disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg transform hover:scale-105 w-full sm:w-auto flex items-center gap-2 justify-center"
+          >
+            {loading ? (
+              <>
+                <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Saving Changes...
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                Save Changes
+              </>
+            )}
+          </button>
         </div>
       </div>
     </div>
@@ -546,30 +996,33 @@ const CampaignPage = () => {
       <TopNavbar user={user} />
       <div className="min-h-screen bg-white">
         {/* Tab Navigation */}
-        <div className="bg-gradient-to-r from-[#f8f9fa] to-white border-b border-[#e9ecef] sticky top-0 z-10">
+        <div className="bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
           <div className="max-w-7xl mx-auto px-6">
-            <div className="flex items-center space-x-8">
+            <div className="flex items-center justify-between">
               <button
                 onClick={() => navigate('/organization')}
-                className="flex items-center space-x-2 py-4 text-[#b6b1b2] hover:text-[#624d41] transition-colors"
+                className="flex items-center space-x-2 py-5 px-4 text-gray-600 hover:text-gray-900 transition-all duration-200 hover:bg-gray-50 rounded-lg -ml-4"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path>
                 </svg>
-                <span>Back to Organization</span>
+                <span className="font-medium">Back</span>
               </button>
-              <div className="flex space-x-1">
+              
+              <div className="flex-1"></div>
+              
+              <div className="flex space-x-2">
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center space-x-2 px-6 py-4 border-b-2 font-medium transition-colors ${
+                    className={`flex items-center space-x-2 px-5 py-3 rounded-lg font-medium transition-all duration-200 ${
                       activeTab === tab.id
-                        ? 'border-[#a50805] text-[#a50805]'
-                        : 'border-transparent text-[#b6b1b2] hover:text-[#624d41]'
+                        ? 'bg-[#a50805] text-white shadow-md'
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                     }`}
                   >
-                    <span>{tab.icon}</span>
+                    {tab.icon}
                     <span>{tab.name}</span>
                   </button>
                 ))}
