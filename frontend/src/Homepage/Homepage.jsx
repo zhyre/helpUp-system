@@ -4,6 +4,8 @@ import { useAuth } from '../contexts/AuthContext';
 import DonationCard from "../components/DonationCard.jsx";
 import TopNavbar from "../components/TopNavbar.jsx";
 import SidebarLayout from "../components/SidebarLayout.jsx";
+import DonateModal from "../DonationPage/DonateModal.jsx";
+import { useCampaigns, transformCampaignForCard } from '../hooks/useCampaigns';
 import WelcomeBanner from './WelcomeBanner';
 import UserStatsCard from './UserStatsCard';
 import ActivityFeed from './ActivityFeed';
@@ -12,6 +14,10 @@ const Homepage = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const [activeSection, setActiveSection] = useState('Home');
+  const [donateModal, setDonateModal] = useState({ isOpen: false, campaignId: null, campaignTitle: '' });
+  
+  // Fetch campaigns for featured drives
+  const { campaigns, loading, error, refetch } = useCampaigns();
 
   const handleLogout = () => {
     logout();
@@ -26,6 +32,20 @@ const Homepage = () => {
     if (name === 'Profile') navigate('/profile');
     if (name === 'Settings') navigate('/settings');
     // Add other navigations as needed
+  };
+
+  const handleDonateClick = (campaignId, campaignTitle) => {
+    setDonateModal({
+      isOpen: true,
+      campaignId,
+      campaignTitle
+    });
+  };
+
+  const handleCloseDonateModal = () => {
+    setDonateModal({ isOpen: false, campaignId: null, campaignTitle: '' });
+    // Refresh campaigns to show updated data if donation was successful
+    refetch();
   };
 
   const recentActivities = [
@@ -105,31 +125,88 @@ const Homepage = () => {
         {/* Featured Drives */}
         <div>
           <h2 className="text-2xl font-bold text-[#624d41] mb-4">Featured Donation Drives</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <DonationCard
-              price="₱300/mdn"
-              orgName="Barangay San Antonio"
-              donationName="Fire Recovery Support"
-              desc="Help families recover from the recent fire incident in our community."
-              image="/images/fireimage.jpg"
-            />
-            <DonationCard
-              price="₱500/mdn"
-              orgName="City Disaster Response"
-              donationName="Emergency Relief Fund"
-              desc="Providing immediate assistance to disaster-affected families."
-              image="/images/fire_img2.JPG.jpg"
-            />
-            <DonationCard
-              price="₱200/mdn"
-              orgName="Community Aid Network"
-              donationName="Rebuilding Homes"
-              desc="Support the reconstruction of homes destroyed by natural disasters."
-              image="/images/bagyo_tino1.jpg"
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
+            {loading ? (
+              // Loading skeleton
+              [...Array(3)].map((_, index) => (
+                <div key={index} className="bg-gradient-to-br from-white to-gray-50 rounded-2xl overflow-hidden shadow-lg h-full flex flex-col">
+                  <div className="w-full h-32 bg-gradient-to-br from-gray-200 to-gray-300 animate-pulse flex-shrink-0"></div>
+                  <div className="p-3 flex flex-col h-full">
+                    <div className="h-4 bg-gray-200 rounded mb-1 animate-pulse flex-shrink-0"></div>
+                    <div className="h-3 bg-gray-200 rounded mb-1 animate-pulse flex-shrink-0"></div>
+                    <div className="h-4 bg-gray-200 rounded mb-1 animate-pulse flex-shrink-0"></div>
+                    <div className="h-3 bg-gray-200 rounded mb-2 animate-pulse flex-shrink-0"></div>
+                    <div className="h-8 bg-gray-200 rounded animate-pulse flex-shrink-0"></div>
+                  </div>
+                </div>
+              ))
+            ) : error ? (
+              // Error state
+              <div className="col-span-full text-center py-8">
+                <p className="text-red-600 mb-4">Unable to load featured campaigns</p>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+                >
+                  Try Again
+                </button>
+              </div>
+            ) : campaigns.length > 0 ? (
+              campaigns.slice(0, 3).map((campaign) => {
+                const campaignData = transformCampaignForCard(campaign);
+                return (
+                  <DonationCard
+                    key={campaign.campaignID}
+                    {...campaignData}
+                    campaignId={campaign.campaignID}
+                    onDonate={handleDonateClick}
+                  />
+                );
+              })
+            ) : (
+              // No campaigns fallback
+              <>
+                <DonationCard
+                  price="₱0"
+                  orgName="No Organization"
+                  donationName="No Active Campaigns"
+                  desc="Currently no active donation drives available"
+                  image="/images/fireimage.jpg"
+                  campaignId={null}
+                  onDonate={null}
+                />
+                <DonationCard
+                  price="₱0"
+                  orgName="No Organization"
+                  donationName="No Active Campaigns"
+                  desc="Currently no active donation drives available"
+                  image="/images/fire_img2.JPG.jpg"
+                  campaignId={null}
+                  onDonate={null}
+                />
+                <DonationCard
+                  price="₱0"
+                  orgName="No Organization"
+                  donationName="No Active Campaigns"
+                  desc="Currently no active donation drives available"
+                  image="/images/bagyo_tino1.jpg"
+                  campaignId={null}
+                  onDonate={null}
+                />
+              </>
+            )}
           </div>
         </div>
       </SidebarLayout>
+
+      {/* Donate Modal */}
+      {donateModal.isOpen && (
+        <DonateModal
+          onClose={handleCloseDonateModal}
+          campaignTitle={donateModal.campaignTitle}
+          campaignId={donateModal.campaignId}
+        />
+      )}
     </>
   );
 };

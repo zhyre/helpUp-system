@@ -34,7 +34,10 @@ const CampaignPage = () => {
           targetAmount: data.targetAmount || '',
           endDate: data.endDate || '',
           startDate: data.startDate || '',
-          organization: data.organization // Preserve organization
+          organization: {
+            organizationID: data.organizationID,
+            name: data.organizationName
+          } // Preserve organization
         });
         setError(null);
       } catch (err) {
@@ -952,7 +955,10 @@ const CampaignPage = () => {
                   targetAmount: campaign.targetAmount,
                   startDate: campaign.startDate,
                   endDate: campaign.endDate,
-                  organization: campaign.organization
+                  organization: {
+                    organizationID: campaign.organizationID,
+                    name: campaign.organizationName
+                  }
                 });
               }
             }}

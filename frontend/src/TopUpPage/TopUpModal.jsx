@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import { processTopUp } from '../services/walletService';
 
-const TopUpModal = ({ onClose }) => {
+const TopUpModal = ({ onClose, onSuccess }) => {
+  const { user } = useAuth();
   const [amount, setAmount] = useState('');
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
@@ -21,6 +24,12 @@ const TopUpModal = ({ onClose }) => {
     if (isNaN(num) || num <= 0) {
       return 'Amount must be a positive number';
     }
+    if (num < 10) {
+      return 'Minimum top-up amount is ₱10';
+    }
+    if (num > 50000) {
+      return 'Maximum top-up amount is ₱50,000';
+    }
     return '';
   };
 
@@ -35,16 +44,40 @@ const TopUpModal = ({ onClose }) => {
       return;
     }
 
+    if (!user || !user.userID) {
+      setErrors({ amount: 'User not logged in' });
+      return;
+    }
+
     setIsLoading(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      setSuccessMessage('Top up successful!');
+    try {
+      const topUpData = {
+        userId: user.userID,
+        amount: parseFloat(amount),
+        notes: 'Top-up via web interface'
+      };
+
+      const result = await processTopUp(topUpData);
+      
+      if (result.success) {
+        setSuccessMessage('Top up successful! Your balance has been updated.');
+        setTimeout(() => {
+          if (onSuccess) {
+            onSuccess();
+          } else {
+            onClose();
+          }
+        }, 2000);
+      } else {
+        setErrors({ amount: result.error || 'Top-up failed' });
+      }
+    } catch (error) {
+      console.error('Top-up error:', error);
+      setErrors({ amount: error.message || 'Failed to process top-up' });
+    } finally {
       setIsLoading(false);
-      setTimeout(() => {
-        onClose();
-      }, 1500);
-    }, 1000);
+    }
   };
 
   return (
@@ -57,6 +90,7 @@ const TopUpModal = ({ onClose }) => {
           <button
             onClick={onClose}
             className="absolute top-4 right-4 text-gray-400 hover:text-red-600 text-3xl transition-colors duration-200"
+            disabled={isLoading}
           >
             &times;
           </button>
@@ -89,8 +123,10 @@ const TopUpModal = ({ onClose }) => {
                   onChange={handleChange}
                   className="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all duration-200 text-lg"
                   placeholder="0.00"
-                  min="1"
+                  min="10"
+                  max="50000"
                   step="1"
+                  disabled={isLoading}
                 />
               </div>
               {errors.amount && (
@@ -101,6 +137,9 @@ const TopUpModal = ({ onClose }) => {
                   {errors.amount}
                 </p>
               )}
+              <p className="text-gray-500 text-sm mt-1">
+                Minimum: ₱10 • Maximum: ₱50,000
+              </p>
             </div>
 
             {/* QUICK AMOUNT BUTTONS */}
@@ -112,7 +151,8 @@ const TopUpModal = ({ onClose }) => {
                     key={amt}
                     type="button"
                     onClick={() => setAmount(amt.toString())}
-                    className="py-3 px-4 border-2 border-gray-200 rounded-xl hover:border-red-300 hover:bg-red-50 transition-all duration-200 font-semibold text-gray-700"
+                    disabled={isLoading}
+                    className="py-3 px-4 border-2 border-gray-200 rounded-xl hover:border-red-300 hover:bg-red-50 transition-all duration-200 font-semibold text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     ₱{amt}
                   </button>
@@ -134,7 +174,7 @@ const TopUpModal = ({ onClose }) => {
             <button
               type="submit"
               className="w-full bg-red-600 hover:bg-red-700 text-white py-4 rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center"
-              disabled={isLoading}
+              disabled={isLoading || !!successMessage}
             >
               {isLoading ? (
                 <>
@@ -143,6 +183,13 @@ const TopUpModal = ({ onClose }) => {
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
                   Processing...
+                </>
+              ) : successMessage ? (
+                <>
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                  </svg>
+                  Completed
                 </>
               ) : (
                 <>

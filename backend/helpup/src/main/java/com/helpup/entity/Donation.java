@@ -14,6 +14,7 @@ public class Donation {
     private LocalDateTime date;
     private String status; // pending, completed
     private String type; // optional
+    private String notes; // optional
 
     @ManyToOne
     @JoinColumn(name = "userID")
@@ -63,6 +64,27 @@ public class Donation {
         this.type = type;
     }
 
-    // Getters and Setters
-    // ...
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public Campaign getCampaign() {
+        return campaign;
+    }
+
+    public void setCampaign(Campaign campaign) {
+        this.campaign = campaign;
+    }
 }

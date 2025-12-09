@@ -1,32 +1,31 @@
-package com.helpup.entity;
+package com.helpup.dto;
 
-import jakarta.persistence.*;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.LocalDate;
-import java.util.List;
 
-@Entity
-@Table(name = "campaign")
-public class Campaign {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class CampaignDTO {
     private Long campaignID;
     private String name;
     private String description;
     private LocalDate startDate;
     private LocalDate endDate;
     private Double targetAmount;
+    private String organizationName;
+    private Long organizationID;
 
-    @ManyToOne
-    @JoinColumn(name = "organizationID")
-    @JsonIgnore
-    private Organization organization;
+    public CampaignDTO() {
+    }
 
-    // One campaign can have many donations
-    @OneToMany(mappedBy = "campaign", cascade = CascadeType.ALL)
-    @JsonIgnore
-    private List<Donation> donations;
+    public CampaignDTO(Long campaignID, String name, String description, LocalDate startDate, 
+                      LocalDate endDate, Double targetAmount, String organizationName, Long organizationID) {
+        this.campaignID = campaignID;
+        this.name = name;
+        this.description = description;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.targetAmount = targetAmount;
+        this.organizationName = organizationName;
+        this.organizationID = organizationID;
+    }
 
     public Long getCampaignID() {
         return campaignID;
@@ -76,19 +75,19 @@ public class Campaign {
         this.targetAmount = targetAmount;
     }
 
-    public Organization getOrganization() {
-        return organization;
+    public String getOrganizationName() {
+        return organizationName;
     }
 
-    public void setOrganization(Organization organization) {
-        this.organization = organization;
+    public void setOrganizationName(String organizationName) {
+        this.organizationName = organizationName;
     }
 
-    public List<Donation> getDonations() {
-        return donations;
+    public Long getOrganizationID() {
+        return organizationID;
     }
 
-    public void setDonations(List<Donation> donations) {
-        this.donations = donations;
+    public void setOrganizationID(Long organizationID) {
+        this.organizationID = organizationID;
     }
 }

@@ -84,7 +84,10 @@ const OrganizationPage = () => {
       
       // Transform frontend data to backend structure
       const backendCampaignData = {
+        name: campaignData.name,
         name: campaignData.title,
+        targetAmount: Number.parseFloat(campaignData.targetAmount),
+        startDate: campaignData.startDate,
         description: campaignData.description,
         targetAmount: Number.parseFloat(campaignData.goal),
         startDate: new Date().toISOString().split('T')[0],
@@ -100,7 +103,9 @@ const OrganizationPage = () => {
       const transformedCampaign = {
         id: newCampaign.campaignID,
         title: newCampaign.name,
+        type: 'Relief',
         description: newCampaign.description || 'No description provided',
+        period: '3 months',
         goal: newCampaign.targetAmount || 0,
         raised: 0,
         type: campaignData.type || 'Relief',

@@ -99,6 +99,7 @@ const Donation = () => {
         <DonateModal
           onClose={() => setIsModalOpen(false)}
           campaignTitle={donation.title}
+          campaignId={donation.id}
         />
       )}
     </>

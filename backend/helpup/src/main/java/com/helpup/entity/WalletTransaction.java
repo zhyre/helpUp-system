@@ -61,4 +61,12 @@ public class WalletTransaction {
     public void setNotes(String notes) {
         this.notes = notes;
     }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
 }
