@@ -3,7 +3,7 @@
  * Handles all authentication-related API calls
  */
 
-import { get, post } from './api';
+import { get, post, put } from './api';
 
 /**
  * Login user
@@ -117,11 +117,11 @@ export const getUserProfile = async (userId) => {
  */
 export const updateUserProfile = async (userId, userData) => {
   try {
-    const response = await post(`/users/${userId}`, userData);
+    const response = await put(`/users/${userId}`, userData);
     
     // Update stored user data if it's the current user
     const currentUser = getCurrentUser();
-    if (currentUser && currentUser.id === userId) {
+    if (currentUser && (currentUser.userID === userId || currentUser.id === userId)) {
       localStorage.setItem('user', JSON.stringify(response));
     }
     

@@ -125,18 +125,18 @@ const Homepage = () => {
         {/* Featured Drives */}
         <div>
           <h2 className="text-2xl font-bold text-[#624d41] mb-4">Featured Donation Drives</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
             {loading ? (
               // Loading skeleton
               [...Array(3)].map((_, index) => (
-                <div key={index} className="bg-gradient-to-br from-white to-gray-50 rounded-2xl overflow-hidden shadow-lg">
-                  <div className="w-full h-32 bg-gradient-to-br from-gray-200 to-gray-300 animate-pulse"></div>
-                  <div className="p-3">
-                    <div className="h-4 bg-gray-200 rounded mb-1 animate-pulse"></div>
-                    <div className="h-3 bg-gray-200 rounded mb-1 animate-pulse"></div>
-                    <div className="h-4 bg-gray-200 rounded mb-1 animate-pulse"></div>
-                    <div className="h-3 bg-gray-200 rounded mb-2 animate-pulse"></div>
-                    <div className="h-8 bg-gray-200 rounded animate-pulse"></div>
+                <div key={index} className="bg-gradient-to-br from-white to-gray-50 rounded-2xl overflow-hidden shadow-lg h-full flex flex-col">
+                  <div className="w-full h-32 bg-gradient-to-br from-gray-200 to-gray-300 animate-pulse flex-shrink-0"></div>
+                  <div className="p-3 flex flex-col h-full">
+                    <div className="h-4 bg-gray-200 rounded mb-1 animate-pulse flex-shrink-0"></div>
+                    <div className="h-3 bg-gray-200 rounded mb-1 animate-pulse flex-shrink-0"></div>
+                    <div className="h-4 bg-gray-200 rounded mb-1 animate-pulse flex-shrink-0"></div>
+                    <div className="h-3 bg-gray-200 rounded mb-2 animate-pulse flex-shrink-0"></div>
+                    <div className="h-8 bg-gray-200 rounded animate-pulse flex-shrink-0"></div>
                   </div>
                 </div>
               ))

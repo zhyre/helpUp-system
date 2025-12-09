@@ -24,7 +24,7 @@ function DonationCard({ price, orgName, donationName, desc, className = '', imag
       </div>
 
       {/* Content Section - Flexible height with consistent padding */}
-      <div className="p-3 flex flex-col flex-grow">
+      <div className="p-3 flex flex-col h-full">
         {/* Price */}
         <p className="text-lg font-bold mb-1 text-chocolate-choco">{price}</p>
         
@@ -34,24 +34,24 @@ function DonationCard({ price, orgName, donationName, desc, className = '', imag
         </p>
 
         {/* Campaign Name - Fixed height with truncation */}
-        <h4 className="text-base font-semibold mb-1 text-chocolate-choco line-clamp-2 h-9">
+        <h4 className="text-base font-semibold mb-1 text-chocolate-choco line-clamp-2 h-9 flex-shrink-0">
           {truncateText(donationName, 60)}
         </h4>
 
-        {/* Description - Fixed height with truncation */}
+        {/* Description - Flexible height with truncation */}
         <p className="text-sm text-chocolate-choco mb-2 line-clamp-3 flex-grow" title={desc}>
           {truncateText(desc, 120)}
         </p>
 
         {/* Progress Bar - Fixed at bottom */}
-        <div className="h-2 bg-gradient-to-r from-glory-red to-red-700 rounded-full mb-2 relative overflow-hidden">
+        <div className="h-2 bg-gradient-to-r from-glory-red to-red-700 rounded-full mb-2 relative overflow-hidden flex-shrink-0">
           <div className="absolute top-0 left-0 h-full w-3/5 bg-gradient-to-r from-glory-red to-red-700 rounded-full animate-pulse"></div>
         </div>
 
         {/* Donation Button - Fixed at bottom */}
         <button
           onClick={handleDonateClick}
-          className="w-full bg-gradient-to-r from-glory-red to-red-700 text-white py-2 px-6 rounded-lg font-semibold transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-glory-red focus:ring-offset-2 mt-auto"
+          className="w-full bg-gradient-to-r from-glory-red to-red-700 text-white py-2 px-6 rounded-lg font-semibold transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-glory-red focus:ring-offset-2 flex-shrink-0"
           aria-label={`Donate to ${donationName}`}
         >
           Donate Now
