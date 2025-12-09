@@ -3,12 +3,16 @@ import "./Landingpage.css";
 import DonationCard from "../components/DonationCard";
 import Register from "../Register/Register"; // make sure this path matches your project structure
 import Login from "../Login/Login";
+import { useCampaigns, transformCampaignForCard } from "../hooks/useCampaigns";
 import "../Register/Register.css"; // modal + form styling
 import "../Login/Login.css";
 
 function Landingpage({ onLogin }) {
   const [showRegister, setShowRegister] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
+  
+  // Fetch campaigns for featured donations
+  const { campaigns, loading, error } = useCampaigns();
 
   const handleOpenRegister = () => setShowRegister(true);
   const handleCloseRegister = () => setShowRegister(false);
@@ -72,21 +76,59 @@ function Landingpage({ onLogin }) {
         </div>
 
         <div className="hero-cards">
-          {[...Array(5)].map((_, index) => (
-            <div className="hero-card-wrapper" key={index}>
-              <DonationCard
-                price="₱300/mdn"
-                orgName="Organization Name"
-                donationName="DONATION NAME"
-                desc="Donation description"
-                image={
-                  index % 2 === 0
-                    ? "/images/fire_img2.JPG.jpg"
-                    : "/images/fireimage.jpg"
-                }
-              />
+          {loading ? (
+            // Loading skeleton
+            <div className="grid grid-cols-2 gap-6 max-w-4xl mx-auto">
+              {[...Array(2)].map((_, index) => (
+                <div key={index} className="bg-gradient-to-br from-white to-gray-50 rounded-2xl overflow-hidden shadow-lg">
+                  <div className="w-full h-32 bg-gradient-to-br from-gray-200 to-gray-300 animate-pulse"></div>
+                  <div className="p-3">
+                    <div className="h-4 bg-gray-200 rounded mb-1 animate-pulse"></div>
+                    <div className="h-3 bg-gray-200 rounded mb-1 animate-pulse"></div>
+                    <div className="h-4 bg-gray-200 rounded mb-1 animate-pulse"></div>
+                    <div className="h-3 bg-gray-200 rounded mb-2 animate-pulse"></div>
+                    <div className="h-8 bg-gray-200 rounded animate-pulse"></div>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
+          ) : error ? (
+            // Error state
+            <div className="col-span-full text-center py-8">
+              <p className="text-red-600 mb-4">Unable to load featured campaigns</p>
+              <button
+                onClick={() => window.location.reload()}
+                className="bg-glory-red text-white px-4 py-2 rounded hover:bg-red-700"
+              >
+                Try Again
+              </button>
+            </div>
+          ) : campaigns.length > 0 ? (
+            <div className="grid grid-cols-2 gap-6 max-w-4xl mx-auto">
+              {campaigns.slice(0, 2).map((campaign) => {
+                const campaignData = transformCampaignForCard(campaign);
+                return <DonationCard key={campaign.campaignID} {...campaignData} />;
+              })}
+            </div>
+          ) : (
+            // No campaigns fallback
+            <div className="grid grid-cols-2 gap-6 max-w-4xl mx-auto">
+              {[...Array(2)].map((_, index) => (
+                <DonationCard
+                  key={index}
+                  price="₱0"
+                  orgName="No Organization"
+                  donationName="No Active Campaigns"
+                  desc="Currently no active donation drives available"
+                  image={
+                    index % 2 === 0
+                      ? "/images/fire_img2.JPG.jpg"
+                      : "/images/fireimage.jpg"
+                  }
+                />
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -99,21 +141,59 @@ function Landingpage({ onLogin }) {
           </div>
 
           <div className="support-grid">
-            {[...Array(6)].map((_, index) => (
-              <div key={index} className="donation-card-wrapper">
-                <DonationCard
-                  price="₱300/mdn"
-                  orgName="Organization Name"
-                  donationName="DONATION NAME"
-                  desc="Donation description"
-                  image={
-                    index % 2 === 0
-                      ? "/images/fire_img2.JPG.jpg"
-                      : "/images/fireimage.jpg"
-                  }
-                />
+            {loading ? (
+              // Loading skeleton
+              <div className="grid grid-cols-2 gap-6 max-w-4xl mx-auto">
+                {[...Array(2)].map((_, index) => (
+                  <div key={index} className="bg-gradient-to-br from-white to-gray-50 rounded-2xl overflow-hidden shadow-lg">
+                    <div className="w-full h-32 bg-gradient-to-br from-gray-200 to-gray-300 animate-pulse"></div>
+                    <div className="p-3">
+                      <div className="h-4 bg-gray-200 rounded mb-1 animate-pulse"></div>
+                      <div className="h-3 bg-gray-200 rounded mb-1 animate-pulse"></div>
+                      <div className="h-4 bg-gray-200 rounded mb-1 animate-pulse"></div>
+                      <div className="h-3 bg-gray-200 rounded mb-2 animate-pulse"></div>
+                      <div className="h-8 bg-gray-200 rounded animate-pulse"></div>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
+            ) : error ? (
+              // Error state
+              <div className="col-span-full text-center py-8">
+                <p className="text-red-600 mb-4">Unable to load featured campaigns</p>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="bg-glory-red text-white px-4 py-2 rounded hover:bg-red-700"
+                >
+                  Try Again
+                </button>
+              </div>
+            ) : campaigns.length > 0 ? (
+              <div className="grid grid-cols-2 gap-6 max-w-4xl mx-auto">
+                {campaigns.slice(0, 2).map((campaign) => {
+                  const campaignData = transformCampaignForCard(campaign);
+                  return <DonationCard key={campaign.campaignID} {...campaignData} />;
+                })}
+              </div>
+            ) : (
+              // No campaigns fallback
+              <div className="grid grid-cols-2 gap-6 max-w-4xl mx-auto">
+                {[...Array(2)].map((_, index) => (
+                  <DonationCard
+                    key={index}
+                    price="₱0"
+                    orgName="No Organization"
+                    donationName="No Active Campaigns"
+                    desc="Currently no active donation drives available"
+                    image={
+                      index % 2 === 0
+                        ? "/images/fire_img2.JPG.jpg"
+                        : "/images/fireimage.jpg"
+                    }
+                  />
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </section>

@@ -14,6 +14,13 @@ const Campaigns = ({
   onDeleteCampaign,
   navigate
 }) => {
+  // Helper function to truncate text with ellipsis
+  const truncateText = (text, maxLength) => {
+    if (!text) return '';
+    if (text.length <= maxLength) return text;
+    return text.slice(0, maxLength).trim() + '…';
+  };
+
   const getStatusColor = (status) => {
     switch (status) {
       case 'Active': return 'bg-[#a50805]';
@@ -43,7 +50,7 @@ const Campaigns = ({
         case 'progress-high':
           return (b.raised / b.goal) - (a.raised / a.goal);
         case 'progress-low':
-          return (a.raised / a.goal) - (b.raised / a.goal);
+          return (a.raised / a.goal) - (b.raised / b.goal);
         default:
           return 0;
       }
@@ -165,20 +172,22 @@ const Campaigns = ({
         return (
           <div
             key={campaign.id}
-            className="bg-gradient-to-br from-white to-[#f8f9fa] border border-[#e9ecef] rounded-xl shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer group overflow-hidden"
+            className="bg-gradient-to-br from-white to-[#f8f9fa] border border-[#e9ecef] rounded-xl shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer group overflow-hidden h-full flex flex-col"
             onClick={() => navigate(`/organization/campaign/${campaign.id}`)}
           >
             {/* Campaign Header */}
-            <div className="p-6 border-b border-[#e9ecef]">
+            <div className="p-6 border-b border-[#e9ecef] flex-shrink-0">
               <div className="flex items-start justify-between mb-3">
-                <h3 className="text-xl font-bold text-[#624d41] group-hover:text-[#a50805] transition-colors line-clamp-2">
-                  {campaign.title}
+                <h3 className="text-xl font-bold text-[#624d41] group-hover:text-[#a50805] transition-colors line-clamp-2 flex-grow pr-2" title={campaign.title}>
+                  {truncateText(campaign.title, 60)}
                 </h3>
-                <span className={`${getStatusColor(campaign.status)} text-white px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap`}>
+                <span className={`${getStatusColor(campaign.status)} text-white px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap flex-shrink-0`}>
                   {campaign.status}
                 </span>
               </div>
-              <p className="text-[#b6b1b2] text-sm line-clamp-2 mb-4">{campaign.description}</p>
+              <p className="text-[#b6b1b2] text-sm line-clamp-2 mb-4" title={campaign.description}>
+                {truncateText(campaign.description, 100)}
+              </p>
 
               {/* Key Metrics */}
               <div className="grid grid-cols-2 gap-4 mb-4">
@@ -194,7 +203,7 @@ const Campaigns = ({
             </div>
 
             {/* Progress Section */}
-            <div className="p-6">
+            <div className="p-6 flex-grow flex flex-col">
               <div className="flex justify-between text-sm text-[#b6b1b2] mb-2">
                 <span>Goal: ₱{campaign.goal.toLocaleString()}</span>
                 <span>{progressPercentage.toFixed(1)}%</span>
@@ -207,7 +216,7 @@ const Campaigns = ({
               </div>
 
               {/* Campaign Details */}
-              <div className="space-y-2 text-sm">
+              <div className="space-y-2 text-sm flex-grow">
                 <div className="flex justify-between items-center">
                   <span className="text-[#b6b1b2] flex items-center gap-1">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -244,7 +253,7 @@ const Campaigns = ({
                   </div>
                 )}
                 {totalDays > 0 && (
-                  <div className="pt-2 border-t border-gray-200">
+                  <div className="pt-2 border-t border-gray-200 mt-auto">
                     <div className="flex justify-between text-xs text-[#b6b1b2] mb-1">
                       <span>Duration: {totalDays} days</span>
                       <span>{daysElapsed} days elapsed</span>

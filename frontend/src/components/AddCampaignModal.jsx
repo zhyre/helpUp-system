@@ -2,44 +2,52 @@ import React, { useState, useEffect, useRef } from 'react';
 
 const AddCampaignModal = ({ isOpen, onClose, onSave }) => {
   const [formData, setFormData] = useState({
-    title: '',
+    name: '',
     description: '',
-    goal: '',
-    location: '',
+    targetAmount: '',
+    startDate: '',
     endDate: ''
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const titleInputRef = useRef(null);
+  const nameInputRef = useRef(null);
 
   useEffect(() => {
-    if (isOpen && titleInputRef.current) {
-      titleInputRef.current.focus();
+    if (isOpen && nameInputRef.current) {
+      nameInputRef.current.focus();
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    // Set default start date to today
+    const today = new Date().toISOString().split('T')[0];
+    if (!formData.startDate) {
+      setFormData(prev => ({ ...prev, startDate: today }));
     }
   }, [isOpen]);
 
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.title.trim()) {
-      newErrors.title = 'Campaign title is required';
-    } else if (formData.title.trim().length < 3) {
-      newErrors.title = 'Campaign title must be at least 3 characters';
+    if (!formData.name.trim()) {
+      newErrors.name = 'Campaign name is required';
+    } else if (formData.name.trim().length < 3) {
+      newErrors.name = 'Campaign name must be at least 3 characters';
     }
 
     if (!formData.description.trim()) {
       newErrors.description = 'Description is required';
     }
 
-    if (!formData.goal.trim()) {
-      newErrors.goal = 'Goal amount is required';
-    } else if (Number.isNaN(Number(formData.goal)) || Number.parseFloat(formData.goal) <= 0) {
-      newErrors.goal = 'Goal must be a positive number';
+    if (!formData.targetAmount.trim()) {
+      newErrors.targetAmount = 'Target amount is required';
+    } else if (Number.isNaN(Number(formData.targetAmount)) || parseFloat(formData.targetAmount) <= 0) {
+      newErrors.targetAmount = 'Target amount must be a positive number';
     }
 
-    if (!formData.location.trim()) {
-      newErrors.location = 'Location is required';
+    if (!formData.startDate) {
+      newErrors.startDate = 'Start date is required';
     }
 
     if (formData.endDate) {
@@ -52,6 +60,15 @@ const AddCampaignModal = ({ isOpen, onClose, onSave }) => {
       }
     } else {
       newErrors.endDate = 'End date is required';
+    }
+
+    // Check if start date is before end date
+    if (formData.startDate && formData.endDate) {
+      const startDate = new Date(formData.startDate);
+      const endDate = new Date(formData.endDate);
+      if (startDate >= endDate) {
+        newErrors.endDate = 'End date must be after start date';
+      }
     }
 
     setErrors(newErrors);
@@ -84,16 +101,26 @@ const AddCampaignModal = ({ isOpen, onClose, onSave }) => {
     setIsSubmitting(true);
 
     try {
-      await onSave(formData);
+      // Transform form data to match backend structure
+      const campaignData = {
+        name: formData.name.trim(),
+        description: formData.description.trim(),
+        targetAmount: parseFloat(formData.targetAmount),
+        startDate: formData.startDate,
+        endDate: formData.endDate
+        // Note: organization will be set by the parent component or API based on current user
+      };
+
+      await onSave(campaignData);
       setShowSuccess(true);
 
       // Reset form and close modal after success
       setTimeout(() => {
         setFormData({
-          title: '',
+          name: '',
           description: '',
-          goal: '',
-          location: '',
+          targetAmount: '',
+          startDate: '',
           endDate: ''
         });
         setShowSuccess(false);
@@ -108,10 +135,10 @@ const AddCampaignModal = ({ isOpen, onClose, onSave }) => {
 
   const handleCancel = () => {
     setFormData({
-      title: '',
+      name: '',
       description: '',
-      goal: '',
-      location: '',
+      targetAmount: '',
+      startDate: '',
       endDate: ''
     });
     setErrors({});
@@ -173,8 +200,8 @@ const AddCampaignModal = ({ isOpen, onClose, onSave }) => {
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           <div>
-            <label htmlFor="campaign-title" className="block text-[#624d41] font-semibold mb-2 text-sm">
-              Campaign Title <span className="text-red-500">*</span>
+            <label htmlFor="campaign-name" className="block text-[#624d41] font-semibold mb-2 text-sm">
+              Campaign Name <span className="text-red-500">*</span>
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -183,15 +210,15 @@ const AddCampaignModal = ({ isOpen, onClose, onSave }) => {
                 </svg>
               </div>
               <input
-                id="campaign-title"
-                ref={titleInputRef}
+                id="campaign-name"
+                ref={nameInputRef}
                 type="text"
-                name="title"
-                value={formData.title}
+                name="name"
+                value={formData.name}
                 onChange={handleChange}
-                placeholder="Enter campaign title"
+                placeholder="Enter campaign name"
                 className={`w-full pl-10 pr-4 py-3 border rounded-lg transition-all duration-200 ${
-                  errors.title
+                  errors.name
                     ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
                     : 'border-[#e9ecef] focus:ring-[#a50805] focus:border-[#a50805]'
                 } focus:outline-none focus:ring-2`}
@@ -199,12 +226,12 @@ const AddCampaignModal = ({ isOpen, onClose, onSave }) => {
                 disabled={isSubmitting}
               />
             </div>
-            {errors.title && (
+            {errors.name && (
               <p className="text-red-500 text-sm mt-1 flex items-center space-x-1">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
-                <span>{errors.title}</span>
+                <span>{errors.name}</span>
               </p>
             )}
           </div>
@@ -244,115 +271,113 @@ const AddCampaignModal = ({ isOpen, onClose, onSave }) => {
             )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="campaign-goal" className="block text-[#624d41] font-semibold mb-2 text-sm">
-                Goal Amount (₱) <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <svg className="w-5 h-5 text-[#b6b1b2]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
-                  </svg>
-                </div>
-                <input
-                  id="campaign-goal"
-                  type="number"
-                  name="goal"
-                  value={formData.goal}
-                  onChange={handleChange}
-                  placeholder="50000"
-                  className={`w-full pl-10 pr-4 py-3 border rounded-lg transition-all duration-200 ${
-                    errors.goal
-                      ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
-                      : 'border-[#e9ecef] focus:ring-[#a50805] focus:border-[#a50805]'
-                  } focus:outline-none focus:ring-2`}
-                  required
-                  disabled={isSubmitting}
-                  min="1"
-                />
-              </div>
-              {errors.goal && (
-                <p className="text-red-500 text-sm mt-1 flex items-center space-x-1">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                  </svg>
-                  <span>{errors.goal}</span>
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label htmlFor="campaign-location" className="block text-[#624d41] font-semibold mb-2 text-sm">
-                Location <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <svg className="w-5 h-5 text-[#b6b1b2]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                  </svg>
-                </div>
-                <input
-                  id="campaign-location"
-                  type="text"
-                  name="location"
-                  value={formData.location}
-                  onChange={handleChange}
-                  placeholder="Enter location"
-                  className={`w-full pl-10 pr-4 py-3 border rounded-lg transition-all duration-200 ${
-                    errors.location
-                      ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
-                      : 'border-[#e9ecef] focus:ring-[#a50805] focus:border-[#a50805]'
-                  } focus:outline-none focus:ring-2`}
-                  required
-                  disabled={isSubmitting}
-                />
-              </div>
-              {errors.location && (
-                <p className="text-red-500 text-sm mt-1 flex items-center space-x-1">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                  </svg>
-                  <span>{errors.location}</span>
-                </p>
-              )}
-            </div>
-          </div>
-
           <div>
-            <label htmlFor="end-date" className="block text-[#624d41] font-semibold mb-2 text-sm">
-              Campaign End Date <span className="text-red-500">*</span>
+            <label htmlFor="campaign-targetAmount" className="block text-[#624d41] font-semibold mb-2 text-sm">
+              Target Amount (₱) <span className="text-red-500">*</span>
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <svg className="w-5 h-5 text-[#b6b1b2]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
                 </svg>
               </div>
               <input
-                id="end-date"
-                type="date"
-                name="endDate"
-                value={formData.endDate}
+                id="campaign-targetAmount"
+                type="number"
+                name="targetAmount"
+                value={formData.targetAmount}
                 onChange={handleChange}
-                min={new Date().toISOString().split('T')[0]}
+                placeholder="50000"
                 className={`w-full pl-10 pr-4 py-3 border rounded-lg transition-all duration-200 ${
-                  errors.endDate
+                  errors.targetAmount
                     ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
                     : 'border-[#e9ecef] focus:ring-[#a50805] focus:border-[#a50805]'
                 } focus:outline-none focus:ring-2`}
+                required
                 disabled={isSubmitting}
+                min="1"
               />
             </div>
-            {errors.endDate && (
+            {errors.targetAmount && (
               <p className="text-red-500 text-sm mt-1 flex items-center space-x-1">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
-                <span>{errors.endDate}</span>
+                <span>{errors.targetAmount}</span>
               </p>
             )}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="start-date" className="block text-[#624d41] font-semibold mb-2 text-sm">
+                Campaign Start Date <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg className="w-5 h-5 text-[#b6b1b2]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                  </svg>
+                </div>
+                <input
+                  id="start-date"
+                  type="date"
+                  name="startDate"
+                  value={formData.startDate}
+                  onChange={handleChange}
+                  min={new Date().toISOString().split('T')[0]}
+                  className={`w-full pl-10 pr-4 py-3 border rounded-lg transition-all duration-200 ${
+                    errors.startDate
+                      ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
+                      : 'border-[#e9ecef] focus:ring-[#a50805] focus:border-[#a50805]'
+                  } focus:outline-none focus:ring-2`}
+                  disabled={isSubmitting}
+                />
+              </div>
+              {errors.startDate && (
+                <p className="text-red-500 text-sm mt-1 flex items-center space-x-1">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  <span>{errors.startDate}</span>
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label htmlFor="end-date" className="block text-[#624d41] font-semibold mb-2 text-sm">
+                Campaign End Date <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg className="w-5 h-5 text-[#b6b1b2]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                  </svg>
+                </div>
+                <input
+                  id="end-date"
+                  type="date"
+                  name="endDate"
+                  value={formData.endDate}
+                  onChange={handleChange}
+                  min={formData.startDate || new Date().toISOString().split('T')[0]}
+                  className={`w-full pl-10 pr-4 py-3 border rounded-lg transition-all duration-200 ${
+                    errors.endDate
+                      ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
+                      : 'border-[#e9ecef] focus:ring-[#a50805] focus:border-[#a50805]'
+                  } focus:outline-none focus:ring-2`}
+                  disabled={isSubmitting}
+                />
+              </div>
+              {errors.endDate && (
+                <p className="text-red-500 text-sm mt-1 flex items-center space-x-1">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  <span>{errors.endDate}</span>
+                </p>
+              )}
+            </div>
           </div>
 
           {/* Action Buttons */}
