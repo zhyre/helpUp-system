@@ -25,20 +25,38 @@ const OrganizationPage = () => {
 
   // Get organization ID from user - assuming user.organizationID exists
   // If not in user object, you'll need to fetch it from an API
-  const organizationId = user?.organizationID || user?.organization?.organizationID || 1;
+  const organizationId = user?.organizationID;
+
+  // Check if organizationId is missing and show warning
+  React.useEffect(() => {
+    if (!organizationId && user?.role?.toLowerCase() === 'organization') {
+      console.warn('Organization ID is missing from user object:', user);
+      setError('Organization information not found. Please log in again.');
+    }
+  }, [user, organizationId]);
 
   // Mock organization data - Replace with actual data from auth context or API
   const organization = {
     id: organizationId,
-    name: user?.organization?.name || 'Barangay San Antonio',
+    name: user?.organizationName || 'Organization',
     description: 'A community organization dedicated to helping disaster-affected families rebuild their lives and homes.',
     type: 'Community',
     location: 'San Antonio, Philippines',
-    contactPerson: user?.firstName + ' ' + user?.lastName || 'Maria Santos',
+    contactPerson: user?.firstName + ' ' + user?.lastName || 'Contact Person',
     established: '2015',
     totalCampaigns: campaigns.length,
     totalRaised: campaigns.reduce((sum, c) => sum + (c.raised || 0), 0)
   };
+
+  // Sync active section from query param (?section=campaigns, analytics, settings, dashboard)
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const section = params.get('section');
+    const allowed = ['dashboard', 'campaigns', 'analytics', 'settings'];
+    if (section && allowed.includes(section)) {
+      setActiveSection(section);
+    }
+  }, [location.search]);
 
   // Fetch campaigns on component mount and when returning to the page
   useEffect(() => {
@@ -47,7 +65,7 @@ const OrganizationPage = () => {
         setLoading(true);
         setError(null);
         const data = await getCampaignsByOrganization(organizationId);
-        
+
         // Transform backend data to match frontend structure
         const transformedCampaigns = data.map(campaign => ({
           id: campaign.campaignID,
@@ -62,7 +80,7 @@ const OrganizationPage = () => {
           posted: campaign.startDate,
           endDate: campaign.endDate
         }));
-        
+
         setCampaigns(transformedCampaigns);
       } catch (err) {
         console.error('Error fetching campaigns:', err);
@@ -81,36 +99,40 @@ const OrganizationPage = () => {
   const handleAddCampaign = async (campaignData) => {
     try {
       setLoading(true);
-      
+
+      // Validate organization ID exists
+      if (!organizationId) {
+        alert('Error: Organization ID not found. Please log in again.');
+        setLoading(false);
+        return;
+      }
+
       // Transform frontend data to backend structure
       const backendCampaignData = {
-        name: campaignData.name,
-        name: campaignData.title,
-        targetAmount: Number.parseFloat(campaignData.targetAmount),
-        startDate: campaignData.startDate,
+        name: campaignData.name || campaignData.title,
+        targetAmount: Number.parseFloat(campaignData.targetAmount || campaignData.goal),
+        startDate: campaignData.startDate || new Date().toISOString().split('T')[0],
         description: campaignData.description,
-        targetAmount: Number.parseFloat(campaignData.goal),
-        startDate: new Date().toISOString().split('T')[0],
         endDate: campaignData.endDate,
         organization: {
-          organizationID: organization.id
+          organizationID: organizationId
         }
       };
 
+      console.log('Creating campaign with data:', backendCampaignData);
+
       const newCampaign = await createCampaign(backendCampaignData);
-      
+
       // Transform response to frontend structure
       const transformedCampaign = {
         id: newCampaign.campaignID,
         title: newCampaign.name,
-        type: 'Relief',
+        type: campaignData.type || 'Relief',
         description: newCampaign.description || 'No description provided',
-        period: '3 months',
+        period: campaignData.period || '3 months',
         goal: newCampaign.targetAmount || 0,
         raised: 0,
-        type: campaignData.type || 'Relief',
         location: organization.location,
-        period: campaignData.period || '3 months',
         status: 'Active',
         posted: newCampaign.startDate,
         endDate: newCampaign.endDate
@@ -118,6 +140,7 @@ const OrganizationPage = () => {
 
       setCampaigns(prev => [...prev, transformedCampaign]);
       setIsModalOpen(false);
+      alert('Campaign created successfully!');
     } catch (err) {
       console.error('Error creating campaign:', err);
       alert('Failed to create campaign. Please try again.');
@@ -395,11 +418,10 @@ const OrganizationPage = () => {
                 <button
                   key={item.id}
                   onClick={() => setActiveSection(item.id)}
-                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 ${
-                    activeSection === item.id
-                      ? 'bg-[#a50805] text-white shadow-md'
-                      : 'text-[#624d41] hover:bg-[#f8f9fa] hover:shadow-sm'
-                  }`}
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 ${activeSection === item.id
+                    ? 'bg-[#a50805] text-white shadow-md'
+                    : 'text-[#624d41] hover:bg-[#f8f9fa] hover:shadow-sm'
+                    }`}
                 >
                   <div className="flex-shrink-0">
                     {item.icon}
@@ -439,7 +461,7 @@ const OrganizationPage = () => {
               {activeSection === 'dashboard' && <Dashboard organization={organization} campaigns={campaigns} onCreateCampaign={() => setIsModalOpen(true)} onViewAnalytics={() => setActiveSection('analytics')} />}
               {activeSection === 'campaigns' && <Campaigns campaigns={campaigns} setCampaigns={setCampaigns} searchTerm={searchTerm} setSearchTerm={setSearchTerm} statusFilter={statusFilter} setStatusFilter={setStatusFilter} sortBy={sortBy} setSortBy={setSortBy} onCreateCampaign={() => setIsModalOpen(true)} onEditCampaign={handleEditCampaign} onDeleteCampaign={handleDeleteCampaign} navigate={navigate} />}
               {activeSection === 'analytics' && <Analytics organization={organization} />}
-              {activeSection === 'settings' && <Settings organization={organization} />}
+              {activeSection === 'settings' && <Settings />}
             </>
           )}
         </div>

@@ -13,6 +13,8 @@ public class Organization {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long organizationID;
     private String name;
+    private String description;
+    private String address;
     private String contactDetails;
     private String eligibilityProof; // file path or text
     private String approvalStatus = "pending";
@@ -41,6 +43,22 @@ public class Organization {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
     }
 
     public String getContactDetails() {

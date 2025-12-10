@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 
 const AuthContext = createContext();
 
@@ -16,7 +16,18 @@ export const AuthProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate checking for existing session or just set loading to false
+    // Check for existing user data in localStorage on mount
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      try {
+        const userData = JSON.parse(storedUser);
+        setUser(userData);
+        setIsLoggedIn(true);
+      } catch (error) {
+        console.error('Error parsing stored user data:', error);
+        localStorage.removeItem('user');
+      }
+    }
     setIsLoading(false);
   }, []);
 
@@ -24,20 +35,24 @@ export const AuthProvider = ({ children }) => {
     console.log('AuthContext login called with user:', userData);
     setIsLoggedIn(true);
     setUser(userData);
+    // Persist user data to localStorage
+    localStorage.setItem('user', JSON.stringify(userData));
   };
 
   const logout = () => {
     setIsLoggedIn(false);
     setUser(null);
+    // Clear user data from localStorage
+    localStorage.removeItem('user');
   };
 
-  const value = {
+  const value = useMemo(() => ({
     isLoggedIn,
     user,
     isLoading,
     login,
     logout,
-  };
+  }), [isLoggedIn, user, isLoading]);
 
   return (
     <AuthContext.Provider value={value}>

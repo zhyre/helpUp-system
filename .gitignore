@@ -29,3 +29,5 @@ Thumbs.db
 # === Environment / Secrets ===
 .env
 *.env.local
+
+/Users/zhyrecoritico/Desktop/Programming/HelpUp/helpUp-system/backend/helpup/src/main/resources/application.properties

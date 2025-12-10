@@ -1,33 +1,74 @@
 import React, { useState } from "react";
 import "./Landingpage.css";
 import DonationCard from "../components/DonationCard";
-import Register from "../Register/Register"; // make sure this path matches your project structure
+import AuthUserModal from "../components/AuthUserModal";
+import Register from "../Register/Register"; // donor register
+import OrgRegister from "../Register/OrgRegister"; // organization register
 import Login from "../Login/Login";
 import { useCampaigns, transformCampaignForCard } from "../hooks/useCampaigns";
 import "../Register/Register.css"; // modal + form styling
 import "../Login/Login.css";
 
 function Landingpage({ onLogin }) {
-  const [showRegister, setShowRegister] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showRegister, setShowRegister] = useState(false); // donor
+  const [showOrgRegister, setShowOrgRegister] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
-  
+  const [authType, setAuthType] = useState(null); // 'login' or 'register'
+
   // Fetch campaigns for featured donations
   const { campaigns, loading, error } = useCampaigns();
 
-  const handleOpenRegister = () => setShowRegister(true);
-  const handleCloseRegister = () => setShowRegister(false);
+  const handleOpenAuthModal = (type) => {
+    setAuthType(type);
+    if (type === 'register') {
+      // Show modal for register to choose between donor/organization
+      setShowAuthModal(true);
+    } else {
+      // Open login directly
+      setShowLogin(true);
+    }
+  };
 
-  const handleOpenLogin = () => setShowLogin(true);
+  const handleCloseAuthModal = () => {
+    setShowAuthModal(false);
+    setAuthType(null);
+  };
+
+  const handleSelectDonor = () => {
+    setShowAuthModal(false);
+    if (authType === 'register') {
+      setShowRegister(true);
+      setShowOrgRegister(false);
+    } else {
+      setShowLogin(true);
+    }
+  };
+
+  const handleSelectOrganization = () => {
+    setShowAuthModal(false);
+    if (authType === 'register') {
+      setShowOrgRegister(true);
+      setShowRegister(false);
+    } else {
+      setShowLogin(true);
+    }
+  };
+
+  const handleCloseRegister = () => setShowRegister(false);
+  const handleCloseOrgRegister = () => setShowOrgRegister(false);
   const handleCloseLogin = () => setShowLogin(false);
 
   const handleSwitchToRegister = () => {
     setShowLogin(false);
-    setShowRegister(true);
+    setShowOrgRegister(false);
+    handleOpenAuthModal('register');
   };
 
   const handleSwitchToLogin = () => {
     setShowRegister(false);
-    setShowLogin(true);
+    setShowOrgRegister(false);
+    handleOpenAuthModal('login');
   };
 
   return (
@@ -68,10 +109,10 @@ function Landingpage({ onLogin }) {
           </p>
           <div className="nav-right">
             <br />
-            <button className="register-btn" onClick={handleOpenRegister}>
+            <button className="register-btn" onClick={() => handleOpenAuthModal('register')}>
               Register
             </button>
-            <button className="donate-btn" onClick={handleOpenLogin}>Donate →</button>
+            <button className="donate-btn" onClick={() => handleOpenAuthModal('login')}>Donate →</button>
           </div>
         </div>
 
@@ -366,22 +407,22 @@ function Landingpage({ onLogin }) {
                 <div className="social-links">
                   <a href="#" className="social-link facebook" aria-label="Facebook">
                     <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
                     </svg>
                   </a>
                   <a href="#" className="social-link twitter" aria-label="Twitter">
                     <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                      <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z" />
                     </svg>
                   </a>
                   <a href="#" className="social-link instagram" aria-label="Instagram">
                     <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12.017 0C8.396 0 7.996.014 6.79.067 5.59.12 4.694.347 3.967.673c-.748.334-1.381.98-1.717 1.728C1.927 3.149 1.7 4.045 1.647 5.245c-.053 1.206-.067 1.606-.067 5.227s.014 4.021.067 5.227c.053 1.2.28 2.096.616 2.844.336.748.969 1.394 1.717 1.728.723.326 1.619.553 2.819.606 1.206.053 1.606.067 5.227.067s4.021-.014 5.227-.067c1.2-.053 2.096-.28 2.844-.616.748-.334 1.394-.98 1.728-1.728.326-.748.553-1.644.606-2.844.053-1.206.067-1.606.067-5.227s-.014-4.021-.067-5.227c-.053-1.2-.28-2.096-.616-2.844C20.151 1.927 19.255 1.7 18.055 1.647 16.849 1.594 16.449 1.58 12.827 1.58c-3.621 0-4.021.014-5.227.067C6.39.7 5.494.473 4.746.139 4.002.34 3.366-.313 2.618-.647L12.017 0zM12.017 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zm0 10.162a3.999 3.999 0 110-7.998 3.999 3.999 0 010 7.998zm6.406-11.845a1.44 1.44 0 11-2.88 0 1.44 1.44 0 012.88 0z"/>
+                      <path d="M12.017 0C8.396 0 7.996.014 6.79.067 5.59.12 4.694.347 3.967.673c-.748.334-1.381.98-1.717 1.728C1.927 3.149 1.7 4.045 1.647 5.245c-.053 1.206-.067 1.606-.067 5.227s.014 4.021.067 5.227c.053 1.2.28 2.096.616 2.844.336.748.969 1.394 1.717 1.728.723.326 1.619.553 2.819.606 1.206.053 1.606.067 5.227.067s4.021-.014 5.227-.067c1.2-.053 2.096-.28 2.844-.616.748-.334 1.394-.98 1.728-1.728.326-.748.553-1.644.606-2.844.053-1.206.067-1.606.067-5.227s-.014-4.021-.067-5.227c-.053-1.2-.28-2.096-.616-2.844C20.151 1.927 19.255 1.7 18.055 1.647 16.849 1.594 16.449 1.58 12.827 1.58c-3.621 0-4.021.014-5.227.067C6.39.7 5.494.473 4.746.139 4.002.34 3.366-.313 2.618-.647L12.017 0zM12.017 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zm0 10.162a3.999 3.999 0 110-7.998 3.999 3.999 0 010 7.998zm6.406-11.845a1.44 1.44 0 11-2.88 0 1.44 1.44 0 012.88 0z" />
                     </svg>
                   </a>
                   <a href="#" className="social-link linkedin" aria-label="LinkedIn">
                     <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
                     </svg>
                   </a>
                 </div>
@@ -458,17 +499,43 @@ function Landingpage({ onLogin }) {
         <p>© 2025 HelpUp. All rights reserved.</p>
       </footer>
 
+      {/* AUTH USER MODAL - Choose account type */}
+      {showAuthModal && (
+        <AuthUserModal
+          onClose={handleCloseAuthModal}
+          onSelectDonor={handleSelectDonor}
+          onSelectOrganization={handleSelectOrganization}
+        />
+      )}
+
       {/* REGISTER MODAL */}
       {showRegister && (
         <div className="modal-overlay" onClick={handleCloseRegister}>
           <div
             className="modal-content"
+            style={{ maxWidth: "900px" }}
             onClick={(e) => e.stopPropagation()}
           >
             <button className="modal-close" onClick={handleCloseRegister}>
               &times;
             </button>
             <Register onClose={handleCloseRegister} onSwitchToLogin={handleSwitchToLogin} onRegisterSuccess={onLogin} />
+          </div>
+        </div>
+      )}
+
+      {/* ORGANIZATION REGISTER MODAL */}
+      {showOrgRegister && (
+        <div className="modal-overlay" onClick={handleCloseOrgRegister}>
+          <div
+            className="modal-content"
+            style={{ maxWidth: "900px" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button className="modal-close" onClick={handleCloseOrgRegister}>
+              &times;
+            </button>
+            <OrgRegister onClose={handleCloseOrgRegister} onSwitchToLogin={handleSwitchToLogin} onRegisterSuccess={onLogin} />
           </div>
         </div>
       )}
