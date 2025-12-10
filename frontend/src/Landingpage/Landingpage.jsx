@@ -21,7 +21,12 @@ function Landingpage({ onLogin }) {
 
   const handleOpenAuthModal = (type) => {
     setAuthType(type);
-    setShowAuthModal(true);
+    // Open Register directly instead of the auth modal
+    if (type === 'register') {
+      setShowRegister(true);
+    } else {
+      setShowLogin(true);
+    }
   };
 
   const handleCloseAuthModal = () => {
