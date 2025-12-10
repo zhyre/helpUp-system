@@ -7,6 +7,8 @@ import Homepage from './Homepage/Homepage';
 import ProfilePage from './ProfilePage/ProfilePage';
 import SettingsPage from './SettingsPage/SettingsPage';
 import GlobalDonationPage from './GlobalDonationPage/GlobalDonationPage';
+import GlobalOrganizationPage from './GlobalOrganizationPage/GlobalOrganizationPage';
+import OrganizationPageDonor from './GlobalOrganizationPage/OrganizationPageDonor';
 import Donation from "./DonationPage/Donation";
 import TopUpPage from './TopUpPage/TopUpPage';
 import MainAdminPage from './AdminPage/MainAdminPage';
@@ -37,6 +39,8 @@ function AppContent() {
       <Route path="/organization" element={<ProtectedRoute><OrganizationPage /></ProtectedRoute>} />
       <Route path="/organization/campaign/:id" element={<ProtectedRoute><CampaignPage /></ProtectedRoute>} />
       <Route path="/global-donations" element={<ProtectedRoute><GlobalDonationPage /></ProtectedRoute>} />
+      <Route path="/global-organizations" element={<ProtectedRoute><GlobalOrganizationPage /></ProtectedRoute>} />
+      <Route path="/global-organizations/:orgId" element={<ProtectedRoute><OrganizationPageDonor /></ProtectedRoute>} />
       <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
       <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
       <Route path="/top-up" element={<ProtectedRoute><TopUpPage /></ProtectedRoute>} />

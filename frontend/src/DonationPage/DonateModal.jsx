@@ -56,14 +56,14 @@ const DonateModal = ({ onClose, campaignTitle, campaignId }) => {
 
   const handleBalanceCheck = async (donationAmount) => {
     if (!user || !user.userID) return false;
-    
+
     try {
       setCheckingBalance(true);
       const result = await checkBalance({
         userId: user.userID,
         amount: donationAmount
       });
-      
+
       if (!result.hasSufficientBalance) {
         setErrors({
           balance: `Insufficient balance. Current: ₱${result.currentBalance}, Required: ₱${result.requiredAmount}`
@@ -119,7 +119,7 @@ const DonateModal = ({ onClose, campaignTitle, campaignId }) => {
       };
 
       const result = await processDonation(donationData);
-      
+
       if (result.success) {
         setSuccessMessage('Donation successful! Thank you for your support.');
         setTimeout(() => {
@@ -190,11 +190,10 @@ const DonateModal = ({ onClose, campaignTitle, campaignId }) => {
                   type="number"
                   value={amount}
                   onChange={handleChange}
-                  className={`w-full pl-12 pr-4 py-4 border-2 rounded-xl focus:outline-none focus:ring-2 transition-all duration-200 text-lg ${
-                    errors.amount || errors.balance
+                  className={`w-full pl-12 pr-4 py-4 border-2 rounded-xl focus:outline-none focus:ring-2 transition-all duration-200 text-lg ${errors.amount || errors.balance
                       ? 'border-red-500 focus:border-red-500 focus:ring-red-200'
                       : 'border-gray-200 focus:border-red-500 focus:ring-red-200'
-                  }`}
+                    }`}
                   placeholder="0.00"
                   min="10"
                   max={walletBalance}
@@ -233,11 +232,10 @@ const DonateModal = ({ onClose, campaignTitle, campaignId }) => {
                     type="button"
                     onClick={() => setAmount(amt.toString())}
                     disabled={isLoading || checkingBalance || amt > walletBalance}
-                    className={`py-3 px-4 border-2 rounded-xl transition-all duration-200 font-semibold ${
-                      amt > walletBalance
+                    className={`py-3 px-4 border-2 rounded-xl transition-all duration-200 font-semibold ${amt > walletBalance
                         ? 'border-gray-100 text-gray-400 cursor-not-allowed'
                         : 'border-gray-200 hover:border-red-300 hover:bg-red-50 text-gray-700'
-                    } disabled:opacity-50 disabled:cursor-not-allowed`}
+                      } disabled:opacity-50 disabled:cursor-not-allowed`}
                   >
                     ₱{amt}
                   </button>

@@ -1,6 +1,10 @@
 // Organization service for frontend
 import api from './api';
 
+export const getAllOrganizations = async () => {
+    return api.get('/organizations');
+};
+
 export const fetchOrganizationById = async (id) => {
     return api.get(`/organizations/${id}`);
 };
