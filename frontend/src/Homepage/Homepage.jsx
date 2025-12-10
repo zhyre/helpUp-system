@@ -15,7 +15,7 @@ const Homepage = () => {
   const { user, logout } = useAuth();
   const [activeSection, setActiveSection] = useState('Home');
   const [donateModal, setDonateModal] = useState({ isOpen: false, campaignId: null, campaignTitle: '' });
-  
+
   // Fetch campaigns for featured drives
   const { campaigns, loading, error, refetch } = useCampaigns();
 
@@ -31,7 +31,8 @@ const Homepage = () => {
     if (name === 'Top Up') navigate('/top-up');
     if (name === 'Profile') navigate('/profile');
     if (name === 'Settings') navigate('/settings');
-    // Add other navigations as needed
+    if (name === 'Organization') navigate('/global-organizations');
+    if (name === 'Reports') navigate('/reports');
   };
 
   const handleDonateClick = (campaignId, campaignTitle) => {

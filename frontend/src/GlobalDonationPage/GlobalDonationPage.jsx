@@ -24,7 +24,7 @@ const GlobalDonationPage = () => {
     try {
       setLoading(true);
       const campaignsData = await getAllCampaigns();
-      
+
       // Transform backend data to frontend format
       const transformedCampaigns = campaignsData.map(campaign => ({
         id: campaign.campaignID,
@@ -37,7 +37,7 @@ const GlobalDonationPage = () => {
         endDate: campaign.endDate,
         image: "/images/fireimage.jpg" // Default image - could be enhanced to use campaign-specific images
       }));
-      
+
       setCampaigns(transformedCampaigns);
       setError(null);
     } catch (err) {
@@ -69,6 +69,8 @@ const GlobalDonationPage = () => {
     if (name === 'Top Up') navigate('/top-up');
     if (name === 'Profile') navigate('/profile');
     if (name === 'Settings') navigate('/settings');
+    if (name === 'Organization') navigate('/global-organizations');
+    if (name === 'Reports') navigate('/reports');
   };
 
   // Mock user data
@@ -131,7 +133,7 @@ const GlobalDonationPage = () => {
               </div>
               <h3 className="text-lg font-semibold text-red-800 mb-2">Error Loading Campaigns</h3>
               <p className="text-red-600 mb-4">{error}</p>
-              <button 
+              <button
                 onClick={loadCampaigns}
                 className="bg-[#a50805] text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
               >
@@ -163,7 +165,7 @@ const GlobalDonationPage = () => {
           title={campaigns.length > 0 ? 'All Current Donation Drives' : 'No Active Campaigns'}
           onDonate={handleDonateClick}
         />
-        
+
         {campaigns.length === 0 && (
           <div className="text-center py-16">
             <div className="bg-gradient-to-br from-[#f8f9fa] to-white p-8 rounded-2xl border-2 border-dashed border-[#e9ecef] max-w-md mx-auto">

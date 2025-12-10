@@ -29,20 +29,18 @@ const SidebarLayout = ({ children, activeSection, onNavigate }) => {
               <button
                 key={item.name}
                 onClick={() => onNavigate(item.name)}
-                className={`group w-full flex items-center space-x-4 px-4 py-3.5 rounded-xl transition-all duration-300 ease-out transform hover:scale-[1.02] hover:shadow-lg relative overflow-hidden ${
-                  activeSection === item.name
+                className={`group w-full flex items-center space-x-4 px-4 py-3.5 rounded-xl transition-all duration-300 ease-out transform hover:scale-[1.02] hover:shadow-lg relative overflow-hidden ${activeSection === item.name
                     ? 'bg-gradient-to-r from-[#a50805] to-[#d32f2f] text-white shadow-lg scale-[1.02]'
                     : 'text-[#624d41] hover:bg-gradient-to-r hover:from-white hover:to-[#f8f9fa] hover:text-[#a50805]'
-                }`}
+                  }`}
                 style={{
                   animationDelay: `${index * 50}ms`,
                   animation: 'slideInLeft 0.5s ease-out forwards'
                 }}
               >
                 {/* Hover Background Effect */}
-                <div className={`absolute inset-0 bg-gradient-to-r from-[#a50805]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${
-                  activeSection === item.name ? 'opacity-20' : ''
-                }`}></div>
+                <div className={`absolute inset-0 bg-gradient-to-r from-[#a50805]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${activeSection === item.name ? 'opacity-20' : ''
+                  }`}></div>
 
                 {/* Active Indicator */}
                 {activeSection === item.name && (
@@ -50,20 +48,18 @@ const SidebarLayout = ({ children, activeSection, onNavigate }) => {
                 )}
 
                 {/* Icon */}
-                <div className={`flex-shrink-0 transition-all duration-300 ${
-                  activeSection === item.name
+                <div className={`flex-shrink-0 transition-all duration-300 ${activeSection === item.name
                     ? 'text-white'
                     : 'text-[#a50805] group-hover:scale-110 group-hover:rotate-6'
-                }`}>
+                  }`}>
                   {item.icon}
                 </div>
 
                 {/* Text */}
-                <span className={`font-medium transition-all duration-300 ${
-                  activeSection === item.name
+                <span className={`font-medium transition-all duration-300 ${activeSection === item.name
                     ? 'text-white'
                     : 'group-hover:translate-x-1'
-                }`}>
+                  }`}>
                   {item.name}
                 </span>
 
@@ -78,12 +74,6 @@ const SidebarLayout = ({ children, activeSection, onNavigate }) => {
           {/* Bottom Decorative Element */}
           <div className="absolute bottom-6 left-6 right-6">
             <div className="h-px bg-gradient-to-r from-transparent via-[#e9ecef] to-transparent"></div>
-            <div className="mt-4 text-center">
-              <div className="inline-flex items-center space-x-2 text-xs text-[#b6b1b2]">
-                <div className="w-2 h-2 bg-[#a50805] rounded-full animate-pulse"></div>
-                <span>HelpUp System</span>
-              </div>
-            </div>
           </div>
         </div>
 

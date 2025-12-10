@@ -15,10 +15,6 @@ const ProfilePage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedUser, setEditedUser] = useState(null);
 
-  const handleLogout = () => {
-    navigate('/');
-  };
-
   const handleNav = (name) => {
     setActiveSection(name);
     if (name === 'Home') navigate('/homepage');
@@ -26,7 +22,8 @@ const ProfilePage = () => {
     if (name === 'Top Up') navigate('/top-up');
     if (name === 'Profile') navigate('/profile');
     if (name === 'Settings') navigate('/settings');
-    // Add other navigations as needed
+    if (name === 'Organization') navigate('/global-organizations');
+    if (name === 'Reports') navigate('/reports');
   };
 
   // Load user profile data
