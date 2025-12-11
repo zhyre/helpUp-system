@@ -161,7 +161,10 @@ const Campaigns = ({
       {/* Enhanced Campaign Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
         {filteredCampaigns.map((campaign) => {
-          const progressPercentage = Math.min((campaign.raised / campaign.goal) * 100, 100);
+          // Safe calculations with fallback values
+          const raised = campaign.raised || 0;
+          const goal = campaign.goal || 0;
+          const progressPercentage = goal > 0 ? Math.min((raised / goal) * 100, 100) : 0;
           const endDate = campaign.endDate ? new Date(campaign.endDate) : null;
           const startDate = campaign.posted ? new Date(campaign.posted) : new Date();
           const today = new Date();
@@ -192,7 +195,7 @@ const Campaigns = ({
                 {/* Key Metrics */}
                 <div className="grid grid-cols-2 gap-4 mb-4">
                   <div className="text-center p-3 bg-gradient-to-br from-[#a50805]/5 to-[#a50805]/10 rounded-lg">
-                    <div className="text-lg font-bold text-[#a50805]">₱{campaign.raised.toLocaleString()}</div>
+                    <div className="text-lg font-bold text-[#a50805]">₱{raised.toLocaleString()}</div>
                     <div className="text-xs text-[#b6b1b2]">Raised</div>
                   </div>
                   <div className="text-center p-3 bg-gradient-to-br from-[#4caf50]/5 to-[#4caf50]/10 rounded-lg">
@@ -205,7 +208,7 @@ const Campaigns = ({
               {/* Progress Section */}
               <div className="p-6 flex-grow flex flex-col">
                 <div className="flex justify-between text-sm text-[#b6b1b2] mb-2">
-                  <span>Goal: ₱{campaign.goal.toLocaleString()}</span>
+                  <span>Goal: ₱{goal.toLocaleString()}</span>
                   <span>{progressPercentage.toFixed(1)}%</span>
                 </div>
                 <div className="w-full bg-[#e9ecef] rounded-full h-3 mb-4">

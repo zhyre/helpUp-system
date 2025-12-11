@@ -12,6 +12,7 @@ import ActivityFeed from './ActivityFeed';
 import OrgCard from '../GlobalOrganizationPage/OrgCard';
 import { getAllOrganizations } from '../services/organizationService';
 import { getCampaignsByOrganization } from '../services/campaignService';
+import { getUserDonationSummary, getUserActiveCampaigns } from '../services/donationService';
 
 const Homepage = () => {
   const navigate = useNavigate();
@@ -91,14 +92,36 @@ const Homepage = () => {
 
   // Load user stats
   useEffect(() => {
-    if (user) {
-      setUserStats({
-        totalDonations: user.totalDonations || 0,
-        organizationsHelped: user.organizationsHelped || 0,
-        activeDrives: campaigns.filter(c => c.status === 'ACTIVE').length || 0
-      });
-    }
-  }, [user, campaigns]);
+    const loadUserStats = async () => {
+      if (user) {
+        try {
+          // Get user ID
+          const userId = user.userID || user.id;
+          if (!userId) {
+            console.warn('User ID not found');
+            return;
+          }
+
+          // Fetch donation summary
+          const donationSummary = await getUserDonationSummary(userId);
+          
+          // Fetch active campaigns
+          const activeCampaigns = await getUserActiveCampaigns(userId);
+
+          setUserStats({
+            totalDonations: donationSummary.totalDonations || 0,
+            organizationsHelped: donationSummary.organizationsHelped || 0,
+            activeDrives: activeCampaigns.length || 0
+          });
+        } catch (error) {
+          console.error('Error loading user stats:', error);
+          // Keep default stats if error occurs
+        }
+      }
+    };
+
+    loadUserStats();
+  }, [user]);
 
   const handleLogout = () => {
     logout();
@@ -126,8 +149,12 @@ const Homepage = () => {
 
   const handleCloseDonateModal = () => {
     setDonateModal({ isOpen: false, campaignId: null, campaignTitle: '' });
+  };
+
+  const handleDonationSuccess = () => {
     // Refresh campaigns to show updated data if donation was successful
     refetch();
+    setDonateModal({ isOpen: false, campaignId: null, campaignTitle: '' });
   };
 
   const recentActivities = [
@@ -331,6 +358,7 @@ const Homepage = () => {
           onClose={handleCloseDonateModal}
           campaignTitle={donateModal.campaignTitle}
           campaignId={donateModal.campaignId}
+          onDonationSuccess={handleDonationSuccess}
         />
       )}
     </>

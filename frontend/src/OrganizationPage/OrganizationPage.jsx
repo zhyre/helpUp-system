@@ -8,6 +8,7 @@ import Campaigns from './Campaigns';
 import Analytics from './Analytics';
 import Settings from './Settings';
 import { getCampaignsByOrganization, createCampaign, deleteCampaign as deleteCampaignAPI } from '../services/campaignService';
+import { getDonationsByCampaign } from '../services/donationService';
 
 const OrganizationPage = () => {
   const navigate = useNavigate();
@@ -45,7 +46,7 @@ const OrganizationPage = () => {
     contactPerson: user?.firstName + ' ' + user?.lastName || 'Contact Person',
     established: '2015',
     totalCampaigns: campaigns.length,
-    totalRaised: campaigns.reduce((sum, c) => sum + (c.raised || 0), 0)
+    totalRaised: campaigns.reduce((sum, c) => sum + (c.raised || 0), 0) // Calculate from actual campaign raised amounts
   };
 
   // Sync active section from query param (?section=campaigns, analytics, settings, dashboard)
@@ -66,19 +67,44 @@ const OrganizationPage = () => {
         setError(null);
         const data = await getCampaignsByOrganization(organizationId);
 
-        // Transform backend data to match frontend structure
-        const transformedCampaigns = data.map(campaign => ({
-          id: campaign.campaignID,
-          title: campaign.name,
-          description: campaign.description || 'No description provided',
-          goal: campaign.targetAmount || 0,
-          raised: 0, // This should be calculated from donations
-          type: 'Relief', // Add this field to backend if needed
-          location: organization.location,
-          period: '3 months', // Calculate from start/end dates
-          status: 'Active', // Add this field to backend if needed
-          posted: campaign.startDate,
-          endDate: campaign.endDate
+        // Transform backend data to match frontend structure and fetch donation amounts
+        const transformedCampaigns = await Promise.all(data.map(async (campaign) => {
+          try {
+            // Fetch donations for this campaign to get actual raised amount
+            const donations = await getDonationsByCampaign(campaign.campaignID);
+            const donationList = Array.isArray(donations) ? donations : donations.data || [];
+            const totalRaised = donationList.reduce((sum, donation) => sum + (donation.amount || 0), 0);
+
+            return {
+              id: campaign.campaignID,
+              title: campaign.name,
+              description: campaign.description || 'No description provided',
+              goal: campaign.targetAmount || 0,
+              raised: totalRaised > 0 ? totalRaised : campaign.totalRaised || 0, // Use calculated total from donations, fallback to backend value only if no donations
+              type: 'Relief',
+              location: organization.location,
+              period: '3 months',
+              status: campaign.status || 'Active',
+              posted: campaign.startDate,
+              endDate: campaign.endDate
+            };
+          } catch (err) {
+            console.error(`Error fetching donations for campaign ${campaign.campaignID}:`, err);
+            // Fallback to campaign totalRaised if donation fetch fails
+            return {
+              id: campaign.campaignID,
+              title: campaign.name,
+              description: campaign.description || 'No description provided',
+              goal: campaign.targetAmount || 0,
+              raised: campaign.totalRaised || 0,
+              type: 'Relief',
+              location: organization.location,
+              period: '3 months',
+              status: campaign.status || 'Active',
+              posted: campaign.startDate,
+              endDate: campaign.endDate
+            };
+          }
         }));
 
         setCampaigns(transformedCampaigns);
@@ -259,7 +285,7 @@ const OrganizationPage = () => {
               +12%
             </div>
           </div>
-          <div className="text-3xl font-bold text-[#a50805] mb-2">₱{organization.totalRaised.toLocaleString()}</div>
+          <div className="text-3xl font-bold text-[#a50805] mb-2">₱{campaigns.reduce((sum, c) => sum + (c.raised || 0), 0).toLocaleString()}</div>
           <p className="text-[#624d41] font-medium">Total Funds Raised</p>
           <p className="text-[#b6b1b2] text-sm">Across all campaigns</p>
         </div>

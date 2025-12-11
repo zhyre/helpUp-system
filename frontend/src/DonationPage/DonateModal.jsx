@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { processDonation, getWalletBalance, checkBalance } from '../services/walletService';
 
-const DonateModal = ({ onClose, campaignTitle, campaignId }) => {
+const DonateModal = ({ onClose, campaignTitle, campaignId, onDonationSuccess }) => {
   const { user } = useAuth();
   const [amount, setAmount] = useState('');
   const [errors, setErrors] = useState({});
@@ -123,6 +123,10 @@ const DonateModal = ({ onClose, campaignTitle, campaignId }) => {
       if (result.success) {
         setSuccessMessage('Donation successful! Thank you for your support.');
         setTimeout(() => {
+          // Notify parent component of successful donation before closing
+          if (onDonationSuccess) {
+            onDonationSuccess();
+          }
           onClose();
         }, 2000);
       } else {

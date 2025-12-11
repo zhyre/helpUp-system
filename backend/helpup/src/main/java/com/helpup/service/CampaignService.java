@@ -2,8 +2,10 @@ package com.helpup.service;
 
 import com.helpup.dto.CampaignDTO;
 import com.helpup.entity.Campaign;
+import com.helpup.entity.Donation;
 import com.helpup.entity.Organization;
 import com.helpup.repository.CampaignRepository;
+import com.helpup.repository.DonationRepository;
 import com.helpup.repository.OrganizationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,11 +19,13 @@ public class CampaignService {
 
     private final CampaignRepository campaignRepository;
     private final OrganizationRepository organizationRepository;
+    private final DonationRepository donationRepository;
 
     @Autowired
-    public CampaignService(CampaignRepository campaignRepository, OrganizationRepository organizationRepository) {
+    public CampaignService(CampaignRepository campaignRepository, OrganizationRepository organizationRepository, DonationRepository donationRepository) {
         this.campaignRepository = campaignRepository;
         this.organizationRepository = organizationRepository;
+        this.donationRepository = donationRepository;
     }
 
     public List<CampaignDTO> getAllCampaigns() {
@@ -71,6 +75,9 @@ public class CampaignService {
             organizationID = campaign.getOrganization().getOrganizationID();
         }
         
+        // Calculate actual total raised from donations instead of using stored value
+        Double actualTotalRaised = calculateActualTotalRaised(campaign.getCampaignID());
+        
         return new CampaignDTO(
                 campaign.getCampaignID(),
                 campaign.getName(),
@@ -78,8 +85,22 @@ public class CampaignService {
                 campaign.getStartDate(),
                 campaign.getEndDate(),
                 campaign.getTargetAmount(),
+                actualTotalRaised,
                 organizationName,
                 organizationID
         );
+    }
+    
+    /**
+     * Calculate the actual total raised amount for a campaign by summing all donations
+     */
+    private Double calculateActualTotalRaised(Long campaignId) {
+        List<Donation> donations = donationRepository.findAll().stream()
+                .filter(donation -> donation.getCampaign() != null && donation.getCampaign().getCampaignID().equals(campaignId))
+                .toList();
+        
+        return donations.stream()
+                .mapToDouble(donation -> donation.getAmount() != null ? donation.getAmount() : 0.0)
+                .sum();
     }
 }

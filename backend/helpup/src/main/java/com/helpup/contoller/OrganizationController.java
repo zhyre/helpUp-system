@@ -1,6 +1,7 @@
 package com.helpup.contoller;
 
 import com.helpup.entity.Organization;
+import com.helpup.dto.OrganizationDTO;
 import com.helpup.service.OrganizationService;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,12 +19,12 @@ public class OrganizationController {
     }
 
     @GetMapping
-    public List<Organization> getAllOrganizations() {
+    public List<OrganizationDTO> getAllOrganizations() {
         return organizationService.getAllOrganizations();
     }
 
     @GetMapping("/{id}")
-    public Optional<Organization> getOrganization(@PathVariable Long id) {
+    public Optional<OrganizationDTO> getOrganization(@PathVariable Long id) {
         return organizationService.getOrganizationById(id);
     }
 

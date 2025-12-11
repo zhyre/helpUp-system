@@ -24,6 +24,12 @@ const DonationGrid = ({
     }
   };
 
+  // Calculate progress percentage
+  const getProgressPercentage = (raised, goal) => {
+    if (!goal || goal === 0) return 0;
+    return Math.min((raised / goal) * 100, 100);
+  };
+
   return (
     <div className={className}>
       {showTitle && (
@@ -64,8 +70,11 @@ const DonationGrid = ({
                 </p>
 
                 {/* Progress Bar - Fixed at bottom */}
-                <div className="h-2 bg-gradient-to-r from-[#a50805] to-red-700 rounded-full mb-2 relative overflow-hidden flex-shrink-0">
-                  <div className="absolute top-0 left-0 h-full w-3/5 bg-gradient-to-r from-[#a50805] to-red-700 rounded-full animate-pulse"></div>
+                <div className="h-2 bg-gray-200 rounded-full mb-2 relative overflow-hidden flex-shrink-0">
+                  <div 
+                    className="h-full bg-gradient-to-r from-[#a50805] to-red-700 rounded-full transition-all duration-500"
+                    style={{ width: `${getProgressPercentage(donation.totalRaised || 0, donation.goal || 0)}%` }}
+                  ></div>
                 </div>
 
                 {/* Donation Button - Fixed at bottom */}

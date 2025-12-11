@@ -107,6 +107,13 @@ public class DonationService {
 
             Donation savedDonation = donationRepository.save(donation);
 
+            // Update campaign's total raised amount
+            campaign.setTotalRaised((campaign.getTotalRaised() != null ? campaign.getTotalRaised() : 0.0) + amount);
+            campaignService.saveCampaign(campaign);
+
+            // Organization totalRaised is now calculated dynamically from campaign totals
+            // No need to update organization separately
+
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("donation", savedDonation);

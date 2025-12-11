@@ -21,6 +21,9 @@ public class Campaign {
     private LocalDate startDate;
     private LocalDate endDate;
     private Double targetAmount;
+    
+    @Column(columnDefinition = "DOUBLE DEFAULT 0")
+    private Double totalRaised = 0.0;
 
     @ManyToOne
     @JoinColumn(name = "organizationID")
@@ -78,6 +81,14 @@ public class Campaign {
 
     public void setTargetAmount(Double targetAmount) {
         this.targetAmount = targetAmount;
+    }
+
+    public Double getTotalRaised() {
+        return totalRaised;
+    }
+
+    public void setTotalRaised(Double totalRaised) {
+        this.totalRaised = totalRaised;
     }
 
     public Organization getOrganization() {

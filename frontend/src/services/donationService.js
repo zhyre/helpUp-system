@@ -153,6 +153,70 @@ export const getDonationStats = async () => {
   }
 };
 
+/**
+ * Get user donation summary
+ * @param {number} userId - User ID
+ * @returns {Promise} - User donation summary with total amount and organization count
+ */
+export const getUserDonationSummary = async (userId) => {
+  try {
+    const donations = await getDonationsByUser(userId);
+    const donationList = Array.isArray(donations) ? donations : donations.data || [];
+    
+    // Calculate total donated amount
+    const totalAmount = donationList.reduce((sum, donation) => sum + (donation.amount || 0), 0);
+    
+    // Get unique organizations
+    const uniqueOrganizations = new Set();
+    donationList.forEach(donation => {
+      if (donation.campaign && donation.campaign.organization) {
+        uniqueOrganizations.add(donation.campaign.organization.organizationID);
+      }
+    });
+    
+    return {
+      totalDonations: totalAmount,
+      organizationsHelped: uniqueOrganizations.size,
+      donationCount: donationList.length,
+      donations: donationList
+    };
+  } catch (error) {
+    console.error('Get user donation summary error:', error);
+    // Return default values instead of throwing
+    return {
+      totalDonations: 0,
+      organizationsHelped: 0,
+      donationCount: 0,
+      donations: []
+    };
+  }
+};
+
+/**
+ * Get active campaigns the user supports
+ * @param {number} userId - User ID
+ * @returns {Promise} - List of active campaigns supported by user
+ */
+export const getUserActiveCampaigns = async (userId) => {
+  try {
+    const donations = await getDonationsByUser(userId);
+    const donationList = Array.isArray(donations) ? donations : donations.data || [];
+    
+    // Get unique active campaigns
+    const activeCampaigns = new Map();
+    donationList.forEach(donation => {
+      if (donation.campaign && donation.campaign.status === 'ACTIVE') {
+        activeCampaigns.set(donation.campaign.campaignID, donation.campaign);
+      }
+    });
+    
+    return Array.from(activeCampaigns.values());
+  } catch (error) {
+    console.error('Get user active campaigns error:', error);
+    return [];
+  }
+};
+
 export default {
   getAllCampaigns,
   getCampaignById,
@@ -164,4 +228,6 @@ export default {
   getDonationsByUser,
   getDonationsByCampaign,
   getDonationStats,
+  getUserDonationSummary,
+  getUserActiveCampaigns,
 };

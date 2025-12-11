@@ -33,6 +33,7 @@ const GlobalDonationPage = () => {
         orgName: campaign.organizationName || 'Unknown Organization',
         price: `₱${campaign.targetAmount?.toLocaleString() || '0'}`,
         goal: campaign.targetAmount || 0,
+        totalRaised: campaign.totalRaised || 0,
         startDate: campaign.startDate,
         endDate: campaign.endDate,
         image: "/images/fireimage.jpg" // Default image - could be enhanced to use campaign-specific images
@@ -58,8 +59,12 @@ const GlobalDonationPage = () => {
 
   const handleCloseDonateModal = () => {
     setDonateModal({ isOpen: false, campaignId: null, campaignTitle: '' });
+  };
+
+  const handleDonationSuccess = () => {
     // Refresh campaigns to show updated data if donation was successful
     loadCampaigns();
+    setDonateModal({ isOpen: false, campaignId: null, campaignTitle: '' });
   };
 
   const handleNav = (name) => {
@@ -187,6 +192,7 @@ const GlobalDonationPage = () => {
           onClose={handleCloseDonateModal}
           campaignTitle={donateModal.campaignTitle}
           campaignId={donateModal.campaignId}
+          onDonationSuccess={handleDonationSuccess}
         />
       )}
     </>

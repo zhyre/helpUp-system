@@ -56,6 +56,7 @@ export const transformCampaignForCard = (campaign) => {
   const donationName = campaign.name || 'Campaign';
   const description = campaign.description || 'No description available';
   const targetAmount = campaign.targetAmount || 0;
+  const totalRaised = campaign.totalRaised || 0;
   
   // Format target amount as currency
   const formattedAmount = `₱${targetAmount.toLocaleString('en-PH', {
@@ -73,6 +74,8 @@ export const transformCampaignForCard = (campaign) => {
     desc: description,
     image: defaultImage,
     campaignId: campaign.campaignID,
+    totalRaised,
+    goal: targetAmount,
     startDate: campaign.startDate,
     endDate: campaign.endDate
   };

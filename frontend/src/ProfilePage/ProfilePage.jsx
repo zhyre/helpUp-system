@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { getUserProfile } from '../services/authService.js';
+import { getUserDonationSummary } from '../services/donationService.js';
 import TopNavbar from "../components/TopNavbar.jsx";
 import SidebarLayout from "../components/SidebarLayout.jsx";
 
@@ -14,6 +15,11 @@ const ProfilePage = () => {
   const [error, setError] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editedUser, setEditedUser] = useState(null);
+  const [donationStats, setDonationStats] = useState({
+    totalDonations: 0,
+    organizationsHelped: 0,
+    donationCount: 0
+  });
 
   const handleNav = (name) => {
     setActiveSection(name);
@@ -26,7 +32,7 @@ const ProfilePage = () => {
     if (name === 'Reports') navigate('/reports');
   };
 
-  // Load user profile data
+  // Load user profile data and donation stats
   useEffect(() => {
     const loadUserProfile = async () => {
       if (!authUser) {
@@ -53,6 +59,19 @@ const ProfilePage = () => {
           ...profileData,
           profilePicture: '/HelpUpLogo2.png', // Placeholder - can be enhanced later
         });
+
+        // Fetch donation statistics
+        try {
+          const stats = await getUserDonationSummary(userId);
+          setDonationStats({
+            totalDonations: stats.totalDonations || 0,
+            organizationsHelped: stats.organizationsHelped || 0,
+            donationCount: stats.donationCount || 0
+          });
+        } catch (statsError) {
+          console.error('Error loading donation stats:', statsError);
+          // Continue with profile data if stats fail
+        }
       } catch (err) {
         console.error('Error loading user profile:', err);
         setError('Failed to load user profile. Please try again.');
@@ -333,7 +352,7 @@ const ProfilePage = () => {
                 </div>
               </div>
               <p className="text-[#624d41] text-sm font-medium mb-1">Total Donations</p>
-              <p className="text-2xl font-bold text-[#a50805]">₱{user.totalDonations ? user.totalDonations.toLocaleString() : '0'}</p>
+              <p className="text-2xl font-bold text-[#a50805]">₱{donationStats.totalDonations ? donationStats.totalDonations.toLocaleString() : '0'}</p>
             </div>
 
             {/* Organizations Helped Card */}
@@ -346,7 +365,7 @@ const ProfilePage = () => {
                 </div>
               </div>
               <p className="text-[#624d41] text-sm font-medium mb-1">Organizations Helped</p>
-              <p className="text-2xl font-bold text-[#a50805]">{user.organizationsHelped || '0'}</p>
+              <p className="text-2xl font-bold text-[#a50805]">{donationStats.organizationsHelped || '0'}</p>
             </div>
           </div>
         </div>

@@ -9,6 +9,7 @@ import WaysToHelp from "./WaysToHelp.jsx";
 import DonateModal from "./DonateModal.jsx";
 import { getCampaignById } from "../services/campaignService.js";
 import { fetchOrganizationById } from "../services/organizationService.js";
+import { getDonationsByCampaign } from "../services/donationService.js";
 
 const Donation = () => {
   const { id } = useParams();
@@ -21,6 +22,7 @@ const Donation = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isSaved, setIsSaved] = useState(false);
+  const [donations, setDonations] = useState([]);
 
   // Fetch campaign data
   useEffect(() => {
@@ -31,6 +33,16 @@ const Donation = () => {
         const campaignData = await getCampaignById(id);
         const campData = Array.isArray(campaignData) ? campaignData[0] : campaignData.data || campaignData;
         setCampaign(campData);
+
+        // Fetch donations for this campaign to calculate real totalRaised
+        try {
+          const donationData = await getDonationsByCampaign(id);
+          const donationsArray = Array.isArray(donationData) ? donationData : donationData.data || [];
+          setDonations(donationsArray);
+        } catch (donationErr) {
+          console.error('Error fetching donations:', donationErr);
+          setDonations([]);
+        }
 
         // Fetch organization data if available
         if (campData.organizationID) {
@@ -65,22 +77,37 @@ const Donation = () => {
         const campaignData = await getCampaignById(id);
         const campData = Array.isArray(campaignData) ? campaignData[0] : campaignData.data || campaignData;
         setCampaign(campData);
+        
+        // Also refresh donations to recalculate totalRaised
+        try {
+          const donationData = await getDonationsByCampaign(id);
+          const donationsArray = Array.isArray(donationData) ? donationData : donationData.data || [];
+          setDonations(donationsArray);
+        } catch (donationErr) {
+          console.error('Error refreshing donations:', donationErr);
+        }
       } catch (err) {
         console.error('Error refreshing campaign:', err);
       }
     };
     loadCampaign();
+  };
+
+  const handleCloseModal = () => {
     setIsModalOpen(false);
   };
 
-  // Calculate progress percentage
-  const progressPercent = campaign ? Math.min(((campaign.totalRaised || 0) / (campaign.goalAmount || 1)) * 100, 100) : 0;
+  // Calculate total raised from actual donations
+  const totalRaised = donations.reduce((sum, donation) => sum + (donation.amount || 0), 0);
+
+  // Calculate progress percentage using actual raised amount
+  const progressPercent = campaign ? Math.min(((totalRaised || 0) / (campaign.targetAmount || 1)) * 100, 100) : 0;
 
   // Build campaign details from actual data
   const campaignDetails = campaign ? [
     { label: "Organized by", value: organization?.name || 'Unknown Organization' },
     { label: "Campaign Type", value: campaign.campaignType || 'Not specified' },
-    { label: "Goal", value: `₱${(campaign.goalAmount || 0).toLocaleString()}` },
+    { label: "Goal", value: `₱${(campaign.targetAmount || 0).toLocaleString()}` },
     { label: "Location", value: organization?.address || campaign.location || 'Not specified' },
     { label: "Status", value: campaign.status || 'Active' },
     { label: "Date Posted", value: campaign.createdAt ? new Date(campaign.createdAt).toLocaleDateString() : 'Not specified' }
@@ -155,8 +182,8 @@ const Donation = () => {
                 ></div>
               </div>
               <div className="flex justify-between mt-2 text-sm text-gray-600">
-                <span>₱{(campaign.totalRaised || 0).toLocaleString()} raised</span>
-                <span>Goal: ₱{(campaign.goalAmount || 0).toLocaleString()}</span>
+                <span>₱{totalRaised.toLocaleString()} raised</span>
+                <span>Goal: ₱{(campaign.targetAmount || 0).toLocaleString()}</span>
               </div>
             </div>
 
@@ -164,7 +191,7 @@ const Donation = () => {
             <div className="space-y-3">
               <div className="bg-white p-4 rounded-lg border border-[#e9ecef]">
                 <p className="text-gray-600 text-sm mb-1">Total Raised</p>
-                <p className="text-2xl font-bold text-[#a50805]">₱{(campaign.totalRaised || 0).toLocaleString()}</p>
+                <p className="text-2xl font-bold text-[#a50805]">₱{totalRaised.toLocaleString()}</p>
               </div>
               <div className="bg-white p-4 rounded-lg border border-[#e9ecef]">
                 <p className="text-gray-600 text-sm mb-1">Status</p>
@@ -273,9 +300,10 @@ const Donation = () => {
       {/* DONATE MODAL */}
       {isModalOpen && (
         <DonateModal
-          onClose={handleDonationSuccess}
+          onClose={handleCloseModal}
           campaignTitle={campaign.title || campaign.campaignTitle}
           campaignId={campaign.campaignID || campaign.id}
+          onDonationSuccess={handleDonationSuccess}
         />
       )}
     </>

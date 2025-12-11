@@ -1,6 +1,6 @@
 import React from 'react';
 
-function DonationCard({ price, orgName, donationName, desc, className = '', image, onDonate, campaignId }) {
+function DonationCard({ price, orgName, donationName, desc, className = '', image, onDonate, campaignId, totalRaised = 0, goal = 0 }) {
   // Helper function to truncate text with ellipsis
   const truncateText = (text, maxLength) => {
     if (!text) return '';
@@ -14,6 +14,12 @@ function DonationCard({ price, orgName, donationName, desc, className = '', imag
     if (onDonate && campaignId) {
       onDonate(campaignId, donationName);
     }
+  };
+
+  // Calculate progress percentage
+  const getProgressPercentage = () => {
+    if (!goal || goal === 0) return 0;
+    return Math.min((totalRaised / goal) * 100, 100);
   };
 
   return (
@@ -44,8 +50,11 @@ function DonationCard({ price, orgName, donationName, desc, className = '', imag
         </p>
 
         {/* Progress Bar - Fixed at bottom */}
-        <div className="h-2 bg-gradient-to-r from-glory-red to-red-700 rounded-full mb-2 relative overflow-hidden flex-shrink-0">
-          <div className="absolute top-0 left-0 h-full w-3/5 bg-gradient-to-r from-glory-red to-red-700 rounded-full animate-pulse"></div>
+        <div className="h-2 bg-gray-200 rounded-full mb-2 relative overflow-hidden flex-shrink-0">
+          <div 
+            className="h-full bg-gradient-to-r from-glory-red to-red-700 rounded-full transition-all duration-500"
+            style={{ width: `${getProgressPercentage()}%` }}
+          ></div>
         </div>
 
         {/* Donation Button - Fixed at bottom */}

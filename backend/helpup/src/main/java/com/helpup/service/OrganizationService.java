@@ -1,11 +1,13 @@
 package com.helpup.service;
 
 import com.helpup.entity.Organization;
+import com.helpup.dto.OrganizationDTO;
 import com.helpup.repository.OrganizationRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class OrganizationService {
@@ -16,12 +18,15 @@ public class OrganizationService {
         this.organizationRepository = organizationRepository;
     }
 
-    public List<Organization> getAllOrganizations() {
-        return organizationRepository.findAll();
+    public List<OrganizationDTO> getAllOrganizations() {
+        return organizationRepository.findAll().stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
-    public Optional<Organization> getOrganizationById(Long id) {
-        return organizationRepository.findById(id);
+    public Optional<OrganizationDTO> getOrganizationById(Long id) {
+        Optional<Organization> org = organizationRepository.findById(id);
+        return org.map(this::convertToDTO);
     }
 
     public Organization getOrganizationByUserId(Long userId) {
@@ -49,5 +54,28 @@ public class OrganizationService {
 
     public void deleteOrganization(Long id) {
         organizationRepository.deleteById(id);
+    }
+
+    /**
+     * Convert Organization entity to DTO with dynamically calculated totalRaised
+     * Calculates totalRaised as the sum of all campaign totalRaised amounts
+     */
+    public OrganizationDTO convertToDTO(Organization org) {
+        // Calculate total raised from all campaigns
+        Double totalRaised = org.getCampaigns() != null ? 
+                org.getCampaigns().stream()
+                    .mapToDouble(campaign -> campaign.getTotalRaised() != null ? campaign.getTotalRaised() : 0.0)
+                    .sum() : 0.0;
+        
+        return new OrganizationDTO(
+                org.getOrganizationID(),
+                org.getName(),
+                org.getDescription(),
+                org.getAddress(),
+                org.getContactDetails(),
+                org.getEligibilityProof(),
+                org.getApprovalStatus(),
+                totalRaised
+        );
     }
 }

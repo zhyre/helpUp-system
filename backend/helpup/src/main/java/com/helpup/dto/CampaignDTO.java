@@ -9,6 +9,7 @@ public class CampaignDTO {
     private LocalDate startDate;
     private LocalDate endDate;
     private Double targetAmount;
+    private Double totalRaised;
     private String organizationName;
     private Long organizationID;
 
@@ -23,6 +24,19 @@ public class CampaignDTO {
         this.startDate = startDate;
         this.endDate = endDate;
         this.targetAmount = targetAmount;
+        this.organizationName = organizationName;
+        this.organizationID = organizationID;
+    }
+
+    public CampaignDTO(Long campaignID, String name, String description, LocalDate startDate, 
+                      LocalDate endDate, Double targetAmount, Double totalRaised, String organizationName, Long organizationID) {
+        this.campaignID = campaignID;
+        this.name = name;
+        this.description = description;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.targetAmount = targetAmount;
+        this.totalRaised = totalRaised;
         this.organizationName = organizationName;
         this.organizationID = organizationID;
     }
@@ -73,6 +87,14 @@ public class CampaignDTO {
 
     public void setTargetAmount(Double targetAmount) {
         this.targetAmount = targetAmount;
+    }
+
+    public Double getTotalRaised() {
+        return totalRaised;
+    }
+
+    public void setTotalRaised(Double totalRaised) {
+        this.totalRaised = totalRaised;
     }
 
     public String getOrganizationName() {

@@ -9,6 +9,7 @@ import DonationGrid from "../components/DonationGrid.jsx";
 import DonateModal from "../DonationPage/DonateModal.jsx";
 import { fetchOrganizationById } from '../services/organizationService.js';
 import { getCampaignsByOrganization } from '../services/campaignService.js';
+import { getDonationsByCampaign } from '../services/donationService.js';
 
 const OrganizationPageDonor = () => {
     const navigate = useNavigate();
@@ -36,10 +37,17 @@ const OrganizationPageDonor = () => {
             // Fetch campaigns for this organization
             const campaignsData = await getCampaignsByOrganization(orgId);
 
-            // Calculate total raised
-            const totalRaised = campaignsData.reduce((sum, campaign) => {
-                return sum + (campaign.currentAmount || 0);
-            }, 0);
+            // Fetch donations for each campaign to calculate real total raised
+            const totalRaisedAmount = await Promise.all(campaignsData.map(async (campaign) => {
+                try {
+                    const donations = await getDonationsByCampaign(campaign.campaignID);
+                    const donationList = Array.isArray(donations) ? donations : donations.data || [];
+                    return donationList.reduce((sum, donation) => sum + (donation.amount || 0), 0);
+                } catch (err) {
+                    console.error(`Error fetching donations for campaign ${campaign.campaignID}:`, err);
+                    return 0;
+                }
+            })).then(amounts => amounts.reduce((sum, amount) => sum + amount, 0));
 
             setOrganization({
                 id: orgData.organizationID,
@@ -48,7 +56,7 @@ const OrganizationPageDonor = () => {
                 location: orgData.address || 'Location not specified',
                 contactDetails: orgData.contactDetails,
                 activeCampaigns: campaignsData.length,
-                totalRaised: totalRaised,
+                totalRaised: totalRaisedAmount > 0 ? totalRaisedAmount : orgData.totalRaised || 0,
                 memberCount: orgData.memberCount || 0,
             });
 
@@ -84,8 +92,12 @@ const OrganizationPageDonor = () => {
 
     const handleCloseDonateModal = () => {
         setDonateModal({ isOpen: false, campaignId: null, campaignTitle: '' });
+    };
+
+    const handleDonationSuccess = () => {
         // Refresh campaigns to show updated data if donation was successful
         loadOrganizationDetails();
+        setDonateModal({ isOpen: false, campaignId: null, campaignTitle: '' });
     };
 
     const handleNav = (name) => {
@@ -264,6 +276,7 @@ const OrganizationPageDonor = () => {
                         campaignId={donateModal.campaignId}
                         campaignTitle={donateModal.campaignTitle}
                         onClose={handleCloseDonateModal}
+                        onDonationSuccess={handleDonationSuccess}
                     />
                 )}
             </SidebarLayout>

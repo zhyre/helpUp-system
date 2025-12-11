@@ -35,18 +35,13 @@ const GlobalOrganizationPage = () => {
                     try {
                         const campaigns = await getCampaignsByOrganization(org.organizationID);
 
-                        // Calculate total raised from campaigns
-                        const totalRaised = campaigns.reduce((sum, campaign) => {
-                            return sum + (campaign.currentAmount || 0);
-                        }, 0);
-
                         return {
                             id: org.organizationID,
                             name: org.name,
                             description: org.description || 'No description available',
                             location: org.address || 'Location not specified',
                             activeCampaigns: campaigns.length,
-                            totalRaised: totalRaised,
+                            totalRaised: org.totalRaised || 0,
                             memberCount: org.memberCount || 0,
                             contactDetails: org.contactDetails,
                             approvalStatus: org.approvalStatus
@@ -59,7 +54,7 @@ const GlobalOrganizationPage = () => {
                             description: org.description || 'No description available',
                             location: org.address || 'Location not specified',
                             activeCampaigns: 0,
-                            totalRaised: 0,
+                            totalRaised: org.totalRaised || 0,
                             memberCount: org.memberCount || 0,
                             contactDetails: org.contactDetails,
                             approvalStatus: org.approvalStatus

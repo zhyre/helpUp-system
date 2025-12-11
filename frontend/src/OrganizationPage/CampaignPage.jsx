@@ -63,7 +63,10 @@ const CampaignPage = () => {
     const fetchDonations = async () => {
       try {
         const donationsData = await getDonationsByCampaign(id);
-        setDonations(donationsData || []);
+        // Properly unwrap the donations response
+        const donationsArray = Array.isArray(donationsData) ? donationsData : donationsData.data || [];
+        console.log('Fetched donations for campaign:', id, donationsArray);
+        setDonations(donationsArray);
       } catch (err) {
         console.error('Error fetching donations:', err);
         setDonations([]);
@@ -166,6 +169,8 @@ const CampaignPage = () => {
   const donationAmounts = donations.map(d => d.amount || 0);
   const largestDonation = donationAmounts.length > 0 ? Math.max(...donationAmounts) : 0;
   const smallestDonation = donationAmounts.length > 0 ? Math.min(...donationAmounts) : 0;
+  
+  console.log('Donation calculation - Total donations:', totalDonations, 'Total raised:', totalRaised, 'Donations:', donations);
 
   // Data for display
   const displayData = {
@@ -174,14 +179,16 @@ const CampaignPage = () => {
     goal: campaign.targetAmount || 0,
     raised: totalRaised,
     type: 'Relief',
-    location: 'Location TBD',
-    period: '3 months',
-    status: 'Active',
+    location: campaign.location || 'Location TBD',
+    period: campaign.endDate && campaign.startDate 
+      ? Math.ceil((new Date(campaign.endDate) - new Date(campaign.startDate)) / (1000 * 60 * 60 * 24)) + ' days'
+      : '3 months',
+    status: campaign.status || 'Active',
     posted: campaign.startDate || new Date().toISOString().split('T')[0],
     endDate: campaign.endDate || new Date().toISOString().split('T')[0],
-    category: 'General',
-    targetBeneficiaries: 50,
-    currentBeneficiaries: 0
+    category: campaign.category || 'General',
+    targetBeneficiaries: campaign.targetBeneficiaries || 50,
+    currentBeneficiaries: campaign.currentBeneficiaries || 0
   };
 
   // Transform donations to donor format
