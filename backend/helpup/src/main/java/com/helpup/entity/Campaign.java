@@ -21,7 +21,7 @@ public class Campaign {
     private LocalDate startDate;
     private LocalDate endDate;
     private Double targetAmount;
-    
+
     @Column(columnDefinition = "DOUBLE DEFAULT 0")
     private Double totalRaised = 0.0;
 
@@ -97,6 +97,11 @@ public class Campaign {
 
     public void setOrganization(Organization organization) {
         this.organization = organization;
+    }
+
+    @JsonProperty("organizationID")
+    public Long getOrganizationID() {
+        return organization != null ? organization.getOrganizationID() : null;
     }
 
     public List<Donation> getDonations() {

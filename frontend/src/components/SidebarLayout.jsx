@@ -1,7 +1,9 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { navItems } from "./navbar.jsx";
 
 const SidebarLayout = ({ children, activeSection, onNavigate }) => {
+  const navigate = useNavigate();
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex">
       {/* Sidebar Navigation */}
@@ -28,10 +30,16 @@ const SidebarLayout = ({ children, activeSection, onNavigate }) => {
             {navItems.map((item, index) => (
               <button
                 key={item.name}
-                onClick={() => onNavigate(item.name)}
+                onClick={() => {
+                  if (item.name === "Sign Out") {
+                    navigate('/');
+                  } else {
+                    onNavigate(item.name);
+                  }
+                }}
                 className={`group w-full flex items-center space-x-4 px-4 py-3.5 rounded-xl transition-all duration-300 ease-out transform hover:scale-[1.02] hover:shadow-lg relative overflow-hidden ${activeSection === item.name
-                    ? 'bg-gradient-to-r from-[#a50805] to-[#d32f2f] text-white shadow-lg scale-[1.02]'
-                    : 'text-[#624d41] hover:bg-gradient-to-r hover:from-white hover:to-[#f8f9fa] hover:text-[#a50805]'
+                  ? 'bg-gradient-to-r from-[#a50805] to-[#d32f2f] text-white shadow-lg scale-[1.02]'
+                  : 'text-[#624d41] hover:bg-gradient-to-r hover:from-white hover:to-[#f8f9fa] hover:text-[#a50805]'
                   }`}
                 style={{
                   animationDelay: `${index * 50}ms`,
@@ -49,16 +57,16 @@ const SidebarLayout = ({ children, activeSection, onNavigate }) => {
 
                 {/* Icon */}
                 <div className={`flex-shrink-0 transition-all duration-300 ${activeSection === item.name
-                    ? 'text-white'
-                    : 'text-[#a50805] group-hover:scale-110 group-hover:rotate-6'
+                  ? 'text-white'
+                  : 'text-[#a50805] group-hover:scale-110 group-hover:rotate-6'
                   }`}>
                   {item.icon}
                 </div>
 
                 {/* Text */}
                 <span className={`font-medium transition-all duration-300 ${activeSection === item.name
-                    ? 'text-white'
-                    : 'group-hover:translate-x-1'
+                  ? 'text-white'
+                  : 'group-hover:translate-x-1'
                   }`}>
                   {item.name}
                 </span>

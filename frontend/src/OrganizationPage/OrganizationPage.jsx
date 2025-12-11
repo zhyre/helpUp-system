@@ -46,18 +46,8 @@ const OrganizationPage = () => {
     contactPerson: user?.firstName + ' ' + user?.lastName || 'Contact Person',
     established: '2015',
     totalCampaigns: campaigns.length,
-    totalRaised: campaigns.reduce((sum, c) => sum + (c.raised || 0), 0) // Calculate from actual campaign raised amounts
+    totalRaised: campaigns.reduce((sum, c) => sum + (c.raised || 0), 0)
   };
-
-  // Sync active section from query param (?section=campaigns, analytics, settings, dashboard)
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const section = params.get('section');
-    const allowed = ['dashboard', 'campaigns', 'analytics', 'settings'];
-    if (section && allowed.includes(section)) {
-      setActiveSection(section);
-    }
-  }, [location.search]);
 
   // Fetch campaigns on component mount and when returning to the page
   useEffect(() => {
@@ -67,36 +57,37 @@ const OrganizationPage = () => {
         setError(null);
         const data = await getCampaignsByOrganization(organizationId);
 
-        // Transform backend data to match frontend structure and fetch donation amounts
+        // Transform backend data to match frontend structure and fetch donations
         const transformedCampaigns = await Promise.all(data.map(async (campaign) => {
           try {
-            // Fetch donations for this campaign to get actual raised amount
+            // Fetch donations for this campaign to calculate raised amount
             const donations = await getDonationsByCampaign(campaign.campaignID);
-            const donationList = Array.isArray(donations) ? donations : donations.data || [];
-            const totalRaised = donationList.reduce((sum, donation) => sum + (donation.amount || 0), 0);
+            const raised = donations && Array.isArray(donations)
+              ? donations.reduce((sum, donation) => sum + (donation.amount || 0), 0)
+              : 0;
 
             return {
               id: campaign.campaignID,
               title: campaign.name,
               description: campaign.description || 'No description provided',
               goal: campaign.targetAmount || 0,
-              raised: totalRaised > 0 ? totalRaised : campaign.totalRaised || 0, // Use calculated total from donations, fallback to backend value only if no donations
-              type: 'Relief',
+              raised: raised, // Calculate from actual donations
+              type: 'Relief', // Add this field to backend if needed
               location: organization.location,
-              period: '3 months',
-              status: campaign.status || 'Active',
+              period: '3 months', // Calculate from start/end dates
+              status: campaign.status || 'Active', // Use actual status from backend if available
               posted: campaign.startDate,
               endDate: campaign.endDate
             };
-          } catch (err) {
-            console.error(`Error fetching donations for campaign ${campaign.campaignID}:`, err);
-            // Fallback to campaign totalRaised if donation fetch fails
+          } catch (donationError) {
+            console.warn(`Error fetching donations for campaign ${campaign.campaignID}:`, donationError);
+            // Return campaign with 0 raised if donation fetch fails
             return {
               id: campaign.campaignID,
               title: campaign.name,
               description: campaign.description || 'No description provided',
               goal: campaign.targetAmount || 0,
-              raised: campaign.totalRaised || 0,
+              raised: 0,
               type: 'Relief',
               location: organization.location,
               period: '3 months',
@@ -243,6 +234,16 @@ const OrganizationPage = () => {
       ),
       description: "Organization settings"
     },
+    {
+      id: 'signout',
+      name: 'Sign Out',
+      icon: (
+        <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+          <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+        </svg>
+      ),
+      description: "Sign out of your account"
+    },
   ];
 
   const renderAnalytics = () => (
@@ -285,7 +286,7 @@ const OrganizationPage = () => {
               +12%
             </div>
           </div>
-          <div className="text-3xl font-bold text-[#a50805] mb-2">₱{campaigns.reduce((sum, c) => sum + (c.raised || 0), 0).toLocaleString()}</div>
+          <div className="text-3xl font-bold text-[#a50805] mb-2">₱{organization.totalRaised.toLocaleString()}</div>
           <p className="text-[#624d41] font-medium">Total Funds Raised</p>
           <p className="text-[#b6b1b2] text-sm">Across all campaigns</p>
         </div>
@@ -443,7 +444,13 @@ const OrganizationPage = () => {
               {orgNavItems.map((item) => (
                 <button
                   key={item.id}
-                  onClick={() => setActiveSection(item.id)}
+                  onClick={() => {
+                    if (item.id === 'signout') {
+                      navigate('/');
+                    } else {
+                      setActiveSection(item.id);
+                    }
+                  }}
                   className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 ${activeSection === item.id
                     ? 'bg-[#a50805] text-white shadow-md'
                     : 'text-[#624d41] hover:bg-[#f8f9fa] hover:shadow-sm'

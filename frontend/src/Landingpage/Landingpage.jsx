@@ -83,7 +83,6 @@ function Landingpage({ onLogin }) {
           />
         </div>
         <div className="nav-center">
-          <a href="#drive">Drive</a>
           <a href="#contact">Contact us</a>
           <a href="#about">About us</a>
         </div>
@@ -92,14 +91,14 @@ function Landingpage({ onLogin }) {
       {/* HERO SECTION */}
       <section className="hero">
         <div className="hero-text">
-          <div style={{ marginTop: "-50px" }}>
+          <div className="hero-logo-wrapper">
             <img
               src="/Help.png"
               alt="HelpUp Name"
-              style={{ maxWidth: "60%", height: "auto" }}
+              className="hero-logo"
             />
           </div>
-          <p>
+          <p className="hero-description">
             HelpUp is a donation drive platform dedicated to supporting fire
             victims. We make it easy for schools, organizations, and communities
             to organize and manage fundraising drives, ensuring that every
@@ -107,12 +106,14 @@ function Landingpage({ onLogin }) {
             for those affected by fires. Every donation brings hope and rebuilds
             lives.
           </p>
-          <div className="nav-right">
-            <br />
+          <div className="hero-buttons">
             <button className="register-btn" onClick={() => handleOpenAuthModal('register')}>
-              Register
+              <span>Register</span>
             </button>
-            <button className="donate-btn" onClick={() => handleOpenAuthModal('login')}>Donate →</button>
+            <button className="donate-btn" onClick={() => handleOpenAuthModal('login')}>
+              <span>Donate</span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+            </button>
           </div>
         </div>
 
@@ -170,72 +171,6 @@ function Landingpage({ onLogin }) {
               ))}
             </div>
           )}
-        </div>
-      </section>
-
-      {/* SUPPORT SECTION */}
-      <section id="drive" className="support">
-        <div className="support-container">
-          <div className="support-header">
-            <h2>Send Your Donations</h2>
-            <p className="support-subtitle">Choose from our featured donation drives and make a difference today</p>
-          </div>
-
-          <div className="support-grid">
-            {loading ? (
-              // Loading skeleton
-              <div className="grid grid-cols-2 gap-6 max-w-4xl mx-auto">
-                {[...Array(2)].map((_, index) => (
-                  <div key={index} className="bg-gradient-to-br from-white to-gray-50 rounded-2xl overflow-hidden shadow-lg">
-                    <div className="w-full h-32 bg-gradient-to-br from-gray-200 to-gray-300 animate-pulse"></div>
-                    <div className="p-3">
-                      <div className="h-4 bg-gray-200 rounded mb-1 animate-pulse"></div>
-                      <div className="h-3 bg-gray-200 rounded mb-1 animate-pulse"></div>
-                      <div className="h-4 bg-gray-200 rounded mb-1 animate-pulse"></div>
-                      <div className="h-3 bg-gray-200 rounded mb-2 animate-pulse"></div>
-                      <div className="h-8 bg-gray-200 rounded animate-pulse"></div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : error ? (
-              // Error state
-              <div className="col-span-full text-center py-8">
-                <p className="text-red-600 mb-4">Unable to load featured campaigns</p>
-                <button
-                  onClick={() => window.location.reload()}
-                  className="bg-glory-red text-white px-4 py-2 rounded hover:bg-red-700"
-                >
-                  Try Again
-                </button>
-              </div>
-            ) : campaigns.length > 0 ? (
-              <div className="grid grid-cols-2 gap-6 max-w-4xl mx-auto">
-                {campaigns.slice(0, 2).map((campaign) => {
-                  const campaignData = transformCampaignForCard(campaign);
-                  return <DonationCard key={campaign.campaignID} {...campaignData} />;
-                })}
-              </div>
-            ) : (
-              // No campaigns fallback
-              <div className="grid grid-cols-2 gap-6 max-w-4xl mx-auto">
-                {[...Array(2)].map((_, index) => (
-                  <DonationCard
-                    key={index}
-                    price="₱0"
-                    orgName="No Organization"
-                    donationName="No Active Campaigns"
-                    desc="Currently no active donation drives available"
-                    image={
-                      index % 2 === 0
-                        ? "/images/fire_img2.JPG.jpg"
-                        : "/images/fireimage.jpg"
-                    }
-                  />
-                ))}
-              </div>
-            )}
-          </div>
         </div>
       </section>
 
@@ -348,7 +283,9 @@ function Landingpage({ onLogin }) {
         <div className="contact-container">
           <div className="contact-header">
             <h2>Get In Touch</h2>
-            <p className="contact-subtitle">We'd love to hear from you. Send us a message and we'll respond as soon as possible.</p>
+            <p className="contact-subtitle">
+              We'd love to hear from you. Send us a message and we'll respond as soon as possible.
+            </p>
           </div>
 
           <div className="contact-content">
@@ -356,8 +293,8 @@ function Landingpage({ onLogin }) {
               <div className="info-section">
                 <h3>Let's Talk</h3>
                 <p>
-                  Have questions, suggestions, or need help setting up your donation
-                  drive? We’re here to help and would love to hear from you!
+                  Have questions, suggestions, or need help setting up your donation drive? We’re here to help and would love to
+                  hear from you!
                 </p>
               </div>
 
@@ -439,35 +376,17 @@ function Landingpage({ onLogin }) {
                 <div className="form-row">
                   <div className="form-group">
                     <label htmlFor="name">Full Name</label>
-                    <input
-                      type="text"
-                      id="name"
-                      name="name"
-                      placeholder="Your full name"
-                      required
-                    />
+                    <input type="text" id="name" name="name" placeholder="Your full name" required />
                   </div>
                   <div className="form-group">
                     <label htmlFor="email">Email Address</label>
-                    <input
-                      type="email"
-                      id="email"
-                      name="email"
-                      placeholder="your.email@example.com"
-                      required
-                    />
+                    <input type="email" id="email" name="email" placeholder="your.email@example.com" required />
                   </div>
                 </div>
 
                 <div className="form-group">
                   <label htmlFor="subject">Subject</label>
-                  <input
-                    type="text"
-                    id="subject"
-                    name="subject"
-                    placeholder="What's this about?"
-                    required
-                  />
+                  <input type="text" id="subject" name="subject" placeholder="What's this about?" required />
                 </div>
 
                 <div className="form-group">

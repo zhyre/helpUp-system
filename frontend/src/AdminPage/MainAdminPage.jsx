@@ -80,6 +80,16 @@ const MainAdminPage = () => {
       ),
       description: "Configure system settings"
     },
+    {
+      id: 'signout',
+      name: 'Sign Out',
+      icon: (
+        <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+          <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+        </svg>
+      ),
+      description: "Sign out of your account"
+    },
   ];
 
   return (
@@ -94,12 +104,17 @@ const MainAdminPage = () => {
               {adminNavItems.map((item) => (
                 <button
                   key={item.id}
-                  onClick={() => setActiveSection(item.id)}
-                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 ${
-                    activeSection === item.id
+                  onClick={() => {
+                    if (item.id === 'signout') {
+                      navigate('/');
+                    } else {
+                      setActiveSection(item.id);
+                    }
+                  }}
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 ${activeSection === item.id
                       ? 'bg-[#a50805] text-white shadow-md'
                       : 'text-[#624d41] hover:bg-[#f8f9fa] hover:shadow-sm'
-                  }`}
+                    }`}
                 >
                   <div className="flex-shrink-0">
                     {item.icon}

@@ -42,7 +42,6 @@ const GlobalOrganizationPage = () => {
                             location: org.address || 'Location not specified',
                             activeCampaigns: campaigns.length,
                             totalRaised: org.totalRaised || 0,
-                            memberCount: org.memberCount || 0,
                             contactDetails: org.contactDetails,
                             approvalStatus: org.approvalStatus
                         };
@@ -55,7 +54,6 @@ const GlobalOrganizationPage = () => {
                             location: org.address || 'Location not specified',
                             activeCampaigns: 0,
                             totalRaised: org.totalRaised || 0,
-                            memberCount: org.memberCount || 0,
                             contactDetails: org.contactDetails,
                             approvalStatus: org.approvalStatus
                         };
@@ -109,11 +107,6 @@ const GlobalOrganizationPage = () => {
             title: 'Total Funds Raised',
             value: `₱${organizations.reduce((sum, org) => sum + (org.totalRaised || 0), 0).toLocaleString()}`,
             subtitle: 'All campaigns'
-        },
-        {
-            title: 'Community Members',
-            value: organizations.reduce((sum, org) => sum + (org.memberCount || 0), 0),
-            subtitle: 'Across all orgs'
         }
     ];
 
