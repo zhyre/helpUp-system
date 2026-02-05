@@ -245,7 +245,7 @@ export const getUserActiveCampaigns = async (userId) => {
   }
 };
 
-export default {
+const donationService = {
   getAllCampaigns,
   getCampaignById,
   createCampaign,
@@ -259,3 +259,5 @@ export default {
   getUserDonationSummary,
   getUserActiveCampaigns,
 };
+
+export default donationService;

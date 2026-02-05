@@ -11,6 +11,12 @@ const OrgCard = ({
         return text.slice(0, maxLength).trim() + '…';
     };
 
+    const activeCount = typeof org.activeCampaigns === 'number'
+        ? org.activeCampaigns
+        : Array.isArray(org.campaigns)
+            ? org.campaigns.length
+            : 0;
+
     return (
         <div className="bg-white rounded-xl overflow-hidden shadow hover:shadow-lg transition h-full flex flex-col">
             {/* Image Section - Fixed Height */}
@@ -39,13 +45,17 @@ const OrgCard = ({
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
                         </svg>
-                        <span>{org.location || 'Location not specified'}</span>
+                        <span>{org.location || org.address || 'Location not provided yet'}</span>
                     </div>
                     <div className="flex items-center">
                         <svg className="w-4 h-4 text-[#a50805] mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 2m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
-                        <span>{org.activeCampaigns || 0} Active Campaigns</span>
+                        <span>
+                            {activeCount > 0
+                                ? `${activeCount} Active Campaign${activeCount === 1 ? '' : 's'}`
+                                : 'No active campaigns yet'}
+                        </span>
                     </div>
                 </div>
 

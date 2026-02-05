@@ -169,7 +169,7 @@ const CampaignPage = () => {
   const donationAmounts = donations.map(d => d.amount || 0);
   const largestDonation = donationAmounts.length > 0 ? Math.max(...donationAmounts) : 0;
   const smallestDonation = donationAmounts.length > 0 ? Math.min(...donationAmounts) : 0;
-  
+
   console.log('Donation calculation - Total donations:', totalDonations, 'Total raised:', totalRaised, 'Donations:', donations);
 
   // Data for display
@@ -180,7 +180,7 @@ const CampaignPage = () => {
     raised: totalRaised,
     type: 'Relief',
     location: campaign.location || 'Location TBD',
-    period: campaign.endDate && campaign.startDate 
+    period: campaign.endDate && campaign.startDate
       ? Math.ceil((new Date(campaign.endDate) - new Date(campaign.startDate)) / (1000 * 60 * 60 * 24)) + ' days'
       : '3 months',
     status: campaign.status || 'Active',
@@ -543,7 +543,7 @@ const CampaignPage = () => {
                         </span>
                       )}
                     </div>
-                    <p className="text-[#b6b1b2] text-sm">
+                    <p className="text-[#b6b1b2] text-sm text-left">
                       {new Date(donor.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
                     </p>
                   </div>
@@ -865,66 +865,8 @@ const CampaignPage = () => {
           </div>
         </div>
 
-        {/* Sidebar - Campaign Status & Quick Stats */}
+        {/* Sidebar - Quick Stats */}
         <div className="space-y-6">
-          {/* Campaign Status */}
-          <div className="bg-white p-6 rounded-xl border border-[#e9ecef] shadow-sm hover:shadow-md transition-shadow duration-300">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="bg-[#ff9800] bg-opacity-10 p-2 rounded-lg">
-                <svg className="w-5 h-5 text-[#ff9800]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-              </div>
-              <h2 className="text-xl font-semibold text-[#624d41]">Campaign Status</h2>
-            </div>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-4 rounded-lg border-2 border-[#4caf50] bg-[#4caf50] bg-opacity-5 transition-all duration-200 cursor-pointer hover:shadow-md">
-                <div className="flex items-center gap-3">
-                  <div className="bg-[#4caf50] p-2 rounded-lg">
-                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="text-[#624d41] font-semibold text-sm">Active</h3>
-                    <p className="text-[#b6b1b2] text-xs">Accepting donations</p>
-                  </div>
-                </div>
-                <input type="radio" name="status" value="Active" defaultChecked className="w-4 h-4 text-[#a50805] focus:ring-[#a50805]" />
-              </div>
-
-              <div className="flex items-center justify-between p-4 rounded-lg border border-[#e9ecef] hover:border-[#ff9800] hover:bg-[#ff9800] hover:bg-opacity-5 transition-all duration-200 cursor-pointer">
-                <div className="flex items-center gap-3">
-                  <div className="bg-[#ff9800] p-2 rounded-lg">
-                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="text-[#624d41] font-semibold text-sm">Paused</h3>
-                    <p className="text-[#b6b1b2] text-xs">Temporarily stopped</p>
-                  </div>
-                </div>
-                <input type="radio" name="status" value="Paused" className="w-4 h-4 text-[#a50805] focus:ring-[#a50805]" />
-              </div>
-
-              <div className="flex items-center justify-between p-4 rounded-lg border border-[#e9ecef] hover:border-[#f44336] hover:bg-[#f44336] hover:bg-opacity-5 transition-all duration-200 cursor-pointer">
-                <div className="flex items-center gap-3">
-                  <div className="bg-[#f44336] p-2 rounded-lg">
-                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="text-[#624d41] font-semibold text-sm">Completed</h3>
-                    <p className="text-[#b6b1b2] text-xs">Campaign ended</p>
-                  </div>
-                </div>
-                <input type="radio" name="status" value="Completed" className="w-4 h-4 text-[#a50805] focus:ring-[#a50805]" />
-              </div>
-            </div>
-          </div>
-
           {/* Quick Stats */}
           <div className="bg-gradient-to-br from-[#a50805] to-[#d32f2f] p-6 rounded-xl shadow-lg text-white">
             <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
@@ -966,19 +908,31 @@ const CampaignPage = () => {
               <h2 className="text-xl font-semibold text-red-600">Danger Zone</h2>
             </div>
             <div className="bg-white p-5 rounded-lg">
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div>
-                  <h3 className="text-lg font-semibold text-[#624d41] mb-1">Delete Campaign</h3>
+              <div className="flex flex-col gap-4">
+                <div className="space-y-1">
+                  <h3 className="text-lg font-semibold text-[#624d41]">Permanent deletion</h3>
+                  <p className="text-sm text-[#b6b1b2]">This will permanently remove this campaign and its donation history. This action cannot be undone.</p>
                 </div>
                 <button
                   onClick={handleDeleteCampaign}
                   disabled={loading}
-                  className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all duration-300 font-medium disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap flex items-center gap-2 shadow-md hover:shadow-lg"
+                  className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all duration-300 font-medium disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap flex items-center gap-2 shadow-md hover:shadow-lg self-center"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                  </svg>
-                  Delete Campaign
+                  {loading ? (
+                    <>
+                      <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v4m0 8v4m8-8h-4M8 12H4m11.314-5.314l-2.828 2.828M9.514 14.486l-2.828 2.828m0-11.314l2.828 2.828m5.658 5.658l2.828 2.828"></path>
+                      </svg>
+                      Deleting...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                      </svg>
+                      Delete Campaign
+                    </>
+                  )}
                 </button>
               </div>
             </div>

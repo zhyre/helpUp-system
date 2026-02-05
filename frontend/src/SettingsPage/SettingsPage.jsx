@@ -7,9 +7,10 @@ const SettingsPage = () => {
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState('Settings');
 
-  const handleLogout = () => {
-    navigate('/');
-  };
+  // handleLogout is handled through logout in auth context
+  // const handleLogout = () => {
+  //   navigate('/');
+  // };
 
   const handleNav = (name) => {
     setActiveSection(name);
@@ -79,7 +80,8 @@ const SettingsPage = () => {
     });
   };
 
-  const handleSelect = (category, field, value, subfield = null) => {
+  // handleSelect function used for form control state management
+  // const handleSelect = (category, field, value, subfield = null) => {
     setSettings(prev => {
       if (subfield) {
         return {
@@ -104,7 +106,8 @@ const SettingsPage = () => {
     });
   };
 
-  const calculatePrivacyScore = () => {
+  // calculatePrivacyScore used for tracking user privacy settings
+  // const calculatePrivacyScore = () => {
     let score = 0;
     const maxScore = 100;
 
@@ -129,7 +132,8 @@ const SettingsPage = () => {
 
     return Math.min(score, maxScore);
   };
-
+// getPrivacyLevel determines user privacy score level
+  // 
   const getPrivacyLevel = (score) => {
     if (score >= 80) return { level: 'High', color: 'text-green-600', bg: 'bg-green-100' };
     if (score >= 60) return { level: 'Medium', color: 'text-yellow-600', bg: 'bg-yellow-100' };

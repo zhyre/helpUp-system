@@ -20,7 +20,7 @@ const TopUpPage = () => {
     if (user && user.userID) {
       fetchWalletData();
     }
-  }, [user]);
+  }, [user, fetchWalletData]);
 
   const fetchWalletData = async () => {
     try {

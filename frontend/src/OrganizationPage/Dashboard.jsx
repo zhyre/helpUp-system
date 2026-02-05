@@ -72,7 +72,8 @@ const Dashboard = ({ organization, campaigns, onCreateCampaign, onViewAnalytics 
     return acc + (raised > 0 ? Math.max(Math.floor(raised / 100), 1) : 0);
   }, 0) || 1;
 
-  const avgDonation = totalFundsRaised / totalDonorsEstimate;
+  // avgDonation calculated but can be used in tooltips or extended features
+  // const avgDonation = totalFundsRaised / totalDonorsEstimate;
 
   // Calculate success rate based on completed campaigns vs total campaigns
   const successRate = campaigns.length > 0 ? Math.round((completedCampaigns / campaigns.length) * 100) : 0;

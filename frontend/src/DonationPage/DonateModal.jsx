@@ -15,7 +15,7 @@ const DonateModal = ({ onClose, campaignTitle, campaignId, onDonationSuccess }) 
     if (user && user.userID) {
       fetchWalletBalance();
     }
-  }, [user]);
+  }, [user, fetchWalletBalance]);
 
   const fetchWalletBalance = async () => {
     try {

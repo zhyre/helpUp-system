@@ -7,7 +7,7 @@ const SidebarLayout = ({ children, activeSection, onNavigate }) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex">
       {/* Sidebar Navigation */}
-      <div className="w-64 bg-gradient-to-b from-white via-[#f8f9fa] to-[#f1f3f4] border-r border-[#e9ecef] shadow-xl relative overflow-hidden">
+      <div className="w-64 bg-gradient-to-b from-white via-[#f8f9fa] to-[#f1f3f4] border-r border-[#e9ecef] shadow-xl sticky top-0 h-screen overflow-y-auto">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-5">
           <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-[#a50805] to-transparent"></div>

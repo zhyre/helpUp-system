@@ -190,10 +190,7 @@ const Homepage = () => {
     loadUserStats();
   }, [user]);
 
-  const handleLogout = () => {
-    logout();
-    navigate('/');
-  };
+  // Logout is handled through AuthContext navigation
 
   const handleNav = (name) => {
     setActiveSection(name);
@@ -278,6 +275,7 @@ const Homepage = () => {
     };
 
     loadRecentActivities();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   return (
