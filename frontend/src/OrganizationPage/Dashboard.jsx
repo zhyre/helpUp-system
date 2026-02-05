@@ -17,7 +17,7 @@ const Dashboard = ({ organization, campaigns, onCreateCampaign, onViewAnalytics 
           try {
             const donations = await getDonationsByCampaign(campaign.id);
             const donationList = Array.isArray(donations) ? donations : donations.data || [];
-            
+
             // Map donations to activity format with campaign info
             donationList.forEach(donation => {
               allDonations.push({
@@ -55,25 +55,25 @@ const Dashboard = ({ organization, campaigns, onCreateCampaign, onViewAnalytics 
 
   // Calculate additional metrics
   // Normalize campaign status values for comparison
-  const activeCampaigns = campaigns.filter(c => 
+  const activeCampaigns = campaigns.filter(c =>
     c.status && (c.status.toLowerCase() === 'active' || c.status === 'ACTIVE')
   ).length;
-  
-  const completedCampaigns = campaigns.filter(c => 
+
+  const completedCampaigns = campaigns.filter(c =>
     c.status && (c.status.toLowerCase() === 'completed' || c.status === 'COMPLETED')
   ).length;
-  
+
   // Calculate total funds raised from campaigns (which have real donation data)
   const totalFundsRaised = campaigns.reduce((sum, campaign) => sum + (campaign.raised || 0), 0);
-  
+
   // Calculate average donation (prevent division by zero)
   const totalDonorsEstimate = campaigns.reduce((acc, campaign) => {
     const raised = campaign.raised || 0;
     return acc + (raised > 0 ? Math.max(Math.floor(raised / 100), 1) : 0);
   }, 0) || 1;
-  
+
   const avgDonation = totalFundsRaised / totalDonorsEstimate;
-  
+
   // Calculate success rate based on completed campaigns vs total campaigns
   const successRate = campaigns.length > 0 ? Math.round((completedCampaigns / campaigns.length) * 100) : 0;
 
@@ -266,33 +266,10 @@ const Dashboard = ({ organization, campaigns, onCreateCampaign, onViewAnalytics 
       </div>
 
       {/* Charts and Analytics Preview */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Campaign Performance Chart */}
-        <div className="bg-gradient-to-br from-white to-gray-50 p-6 rounded-xl border border-gray-200 shadow-md">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-xl font-bold text-gray-800">Campaign Performance</h3>
-            <select className="text-sm border border-gray-300 rounded-lg px-3 py-1 bg-white">
-              <option>Last 30 days</option>
-              <option>Last 3 months</option>
-              <option>Last year</option>
-            </select>
-          </div>
-          <div className="h-48 flex items-end justify-between space-x-2">
-            {[65, 80, 45, 90, 75, 85, 70].map((height, index) => (
-              <div key={index} className="flex-1 flex flex-col items-center">
-                <div
-                  className="w-full bg-gradient-to-t from-blue-500 to-blue-400 rounded-t-lg transition-all duration-500 hover:from-blue-600 hover:to-blue-500"
-                  style={{ height: `${height}%` }}
-                ></div>
-                <span className="text-xs text-gray-600 mt-2">Day {index + 1}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
+      <div className="grid grid-cols-1 gap-8">
         {/* Recent Activity with Enhanced Design */}
         <div className="bg-gradient-to-br from-white to-gray-50 p-6 rounded-xl border border-gray-200 shadow-md">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3 mb-6">
             <h3 className="text-xl font-bold text-gray-800">Recent Donor Activity</h3>
             <div className="flex items-center text-green-600 text-sm">
               <span className="inline-block w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>
@@ -314,7 +291,7 @@ const Dashboard = ({ organization, campaigns, onCreateCampaign, onViewAnalytics 
                     </svg>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-gray-800 font-medium group-hover:text-blue-700 transition-colors duration-300">
+                    <p className="text-gray-800 font-medium group-hover:text-blue-700 transition-colors duration-300 text-left">
                       {activity.donorName} donated to <span className="font-semibold">{activity.campaignName}</span>
                     </p>
                     <div className="flex items-center text-gray-500 text-sm mt-1">

@@ -57,7 +57,6 @@ const OrganizationPageDonor = () => {
                 contactDetails: orgData.contactDetails,
                 activeCampaigns: campaignsData.length,
                 totalRaised: totalRaisedAmount > 0 ? totalRaisedAmount : orgData.totalRaised || 0,
-                memberCount: orgData.memberCount || 0,
             });
 
             // Transform campaigns for display
@@ -122,11 +121,6 @@ const OrganizationPageDonor = () => {
             title: 'Total Raised',
             value: `₱${organization.totalRaised.toLocaleString()}`,
             subtitle: 'From all campaigns'
-        },
-        {
-            title: 'Team Members',
-            value: organization.memberCount,
-            subtitle: 'Active volunteers'
         },
         {
             title: 'Location',

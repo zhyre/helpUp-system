@@ -50,14 +50,10 @@ const OrgCard = ({
                 </div>
 
                 {/* Stats Row */}
-                <div className="grid grid-cols-2 gap-2 mb-3 pb-3 border-b border-[#e9ecef] flex-shrink-0">
-                    <div className="text-center">
+                <div className="grid grid-cols-1 gap-2 mb-3 pb-3 border-b border-[#e9ecef] flex-shrink-0">
+                    <div className="text-left">
                         <p className="text-sm text-gray-500">Total Raised</p>
                         <p className="font-bold text-[#a50805]">₱{(org.totalRaised || 0).toLocaleString()}</p>
-                    </div>
-                    <div className="text-center">
-                        <p className="text-sm text-gray-500">Members</p>
-                        <p className="font-bold text-[#624d41]">{org.memberCount || 0}</p>
                     </div>
                 </div>
 

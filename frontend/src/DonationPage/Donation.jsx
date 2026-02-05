@@ -4,7 +4,6 @@ import { useAuth } from "../contexts/AuthContext.jsx";
 import TopNavbar from "../components/TopNavbar.jsx";
 import SidebarLayout from "../components/SidebarLayout.jsx";
 import CampaignDetails from "./CampaignDetails.jsx";
-import CampaignDescription from "./CampaignDescription.jsx";
 import WaysToHelp from "./WaysToHelp.jsx";
 import DonateModal from "./DonateModal.jsx";
 import { getCampaignById } from "../services/campaignService.js";
@@ -21,8 +20,8 @@ const Donation = () => {
   const [organization, setOrganization] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isSaved, setIsSaved] = useState(false);
   const [donations, setDonations] = useState([]);
+  const [showFullDescription, setShowFullDescription] = useState(false);
 
   // Fetch campaign data
   useEffect(() => {
@@ -39,8 +38,8 @@ const Donation = () => {
           const donationData = await getDonationsByCampaign(id);
           const donationsArray = Array.isArray(donationData) ? donationData : donationData.data || [];
           setDonations(donationsArray);
-        } catch (donationErr) {
-          console.error('Error fetching donations:', donationErr);
+        } catch (error_) {
+          console.error('Error fetching donations:', error_);
           setDonations([]);
         }
 
@@ -77,14 +76,14 @@ const Donation = () => {
         const campaignData = await getCampaignById(id);
         const campData = Array.isArray(campaignData) ? campaignData[0] : campaignData.data || campaignData;
         setCampaign(campData);
-        
+
         // Also refresh donations to recalculate totalRaised
         try {
           const donationData = await getDonationsByCampaign(id);
           const donationsArray = Array.isArray(donationData) ? donationData : donationData.data || [];
           setDonations(donationsArray);
-        } catch (donationErr) {
-          console.error('Error refreshing donations:', donationErr);
+        } catch (error_) {
+          console.error('Error refreshing donations:', error_);
         }
       } catch (err) {
         console.error('Error refreshing campaign:', err);
@@ -106,12 +105,17 @@ const Donation = () => {
   // Build campaign details from actual data
   const campaignDetails = campaign ? [
     { label: "Organized by", value: organization?.name || 'Unknown Organization' },
-    { label: "Campaign Type", value: campaign.campaignType || 'Not specified' },
     { label: "Goal", value: `₱${(campaign.targetAmount || 0).toLocaleString()}` },
     { label: "Location", value: organization?.address || campaign.location || 'Not specified' },
-    { label: "Status", value: campaign.status || 'Active' },
     { label: "Date Posted", value: campaign.createdAt ? new Date(campaign.createdAt).toLocaleDateString() : 'Not specified' }
   ] : [];
+
+  const descriptionText = campaign ? (campaign.description || campaign.campaignDescription || 'No description available') : '';
+  const truncatedLength = 220;
+  const isTruncated = descriptionText.length > truncatedLength;
+  const displayedDescription = (showFullDescription || !isTruncated)
+    ? descriptionText
+    : `${descriptionText.slice(0, truncatedLength).trim()}…`;
 
   if (loading) {
     return (
@@ -166,29 +170,25 @@ const Donation = () => {
           </div>
         </div>
 
-        {/* PROGRESS CARD */}
-        <div className="bg-gradient-to-br from-white to-[#f8f9fa] p-6 rounded-xl border border-[#e9ecef] shadow-md mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Progress Bar */}
-            <div className="md:col-span-2">
-              <div className="flex justify-between items-center mb-2">
-                <h3 className="text-lg font-semibold text-[#624d41]">Campaign Progress</h3>
-                <span className="text-[#a50805] font-bold text-lg">{Math.round(progressPercent)}%</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
-                <div
-                  className="bg-gradient-to-r from-[#a50805] to-[#c41212] h-full transition-all duration-500"
-                  style={{ width: `${progressPercent}%` }}
-                ></div>
-              </div>
-              <div className="flex justify-between mt-2 text-sm text-gray-600">
-                <span>₱{totalRaised.toLocaleString()} raised</span>
-                <span>Goal: ₱{(campaign.targetAmount || 0).toLocaleString()}</span>
-              </div>
+        {/* PROGRESS + STATS WITH SIDE CTA */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          <div className="lg:col-span-2 bg-gradient-to-br from-white to-[#f8f9fa] p-6 rounded-xl border border-[#e9ecef] shadow-md">
+            <div className="flex justify-between items-center mb-2">
+              <h3 className="text-lg font-semibold text-[#624d41]">Campaign Progress</h3>
+              <span className="text-[#a50805] font-bold text-lg">{Math.round(progressPercent)}%</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+              <div
+                className="bg-gradient-to-r from-[#a50805] to-[#c41212] h-full transition-all duration-500"
+                style={{ width: `${progressPercent}%` }}
+              ></div>
+            </div>
+            <div className="flex justify-between mt-2 text-sm text-gray-600">
+              <span>₱{totalRaised.toLocaleString()} raised</span>
+              <span>Goal: ₱{(campaign.targetAmount || 0).toLocaleString()}</span>
             </div>
 
-            {/* Quick Stats */}
-            <div className="space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
               <div className="bg-white p-4 rounded-lg border border-[#e9ecef]">
                 <p className="text-gray-600 text-sm mb-1">Total Raised</p>
                 <p className="text-2xl font-bold text-[#a50805]">₱{totalRaised.toLocaleString()}</p>
@@ -198,6 +198,22 @@ const Donation = () => {
                 <p className="text-lg font-semibold text-[#624d41]">{campaign.status || 'Active'}</p>
               </div>
             </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-[#a50805] to-[#8a0604] p-6 rounded-xl shadow-lg text-white flex flex-col justify-between">
+            <div>
+              <h4 className="text-2xl font-bold mb-2">Make a Difference</h4>
+              <p className="text-sm text-red-50">Your contribution helps those in need. Every peso counts!</p>
+            </div>
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="w-full bg-white text-[#a50805] font-bold py-3 px-6 rounded-lg hover:bg-red-50 transition-colors duration-200 flex items-center justify-center gap-2 mt-4"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+              </svg>
+              Donate Now
+            </button>
           </div>
         </div>
 
@@ -209,14 +225,7 @@ const Donation = () => {
 
             {/* DETAILS CARD */}
             <div className="bg-white p-6 rounded-xl shadow-md border border-[#e9ecef]">
-              <h2 className="text-2xl font-bold text-[#624d41] mb-4">Campaign Details</h2>
               <CampaignDetails details={campaignDetails} />
-            </div>
-
-            {/* ABOUT CARD */}
-            <div className="bg-white p-6 rounded-xl shadow-md border border-[#e9ecef]">
-              <h2 className="text-2xl font-bold text-[#624d41] mb-4">About This Campaign</h2>
-              <CampaignDescription description={campaign.description || campaign.campaignDescription} />
             </div>
 
             {/* WAYS TO HELP CARD */}
@@ -231,38 +240,23 @@ const Donation = () => {
           {/* RIGHT SIDEBAR - 1 column */}
           <div className="space-y-6">
 
-            {/* DONATE CARD */}
-            <div className="bg-gradient-to-br from-[#a50805] to-[#8a0604] p-6 rounded-xl shadow-lg text-white sticky top-20">
-              <h3 className="text-xl font-bold mb-3">Make a Difference</h3>
-              <p className="text-sm text-red-50 mb-4">Your contribution helps those in need. Every peso counts!</p>
-              <button
-                onClick={() => setIsModalOpen(true)}
-                className="w-full bg-white text-[#a50805] font-bold py-3 px-4 rounded-lg hover:bg-red-50 transition-colors duration-200 flex items-center justify-center gap-2"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
-                </svg>
-                Donate Now
-              </button>
-            </div>
-
             {/* ORGANIZATION INFO CARD */}
             {organization && (
-              <div className="bg-white p-6 rounded-xl shadow-md border border-[#e9ecef]">
-                <h3 className="text-lg font-bold text-[#624d41] mb-3">About the Organization</h3>
-                <div className="space-y-3">
-                  <div>
+              <div className="bg-white p-6 rounded-xl shadow-md border border-[#e9ecef] text-left">
+                <h3 className="text-lg font-bold text-[#624d41] mb-3 text-left">About the Organization</h3>
+                <div className="space-y-3 text-left">
+                  <div className="text-left">
                     <p className="text-sm text-gray-600">Name</p>
                     <p className="font-semibold text-[#624d41]">{organization.name}</p>
                   </div>
                   {organization.address && (
-                    <div>
+                    <div className="text-left">
                       <p className="text-sm text-gray-600">Location</p>
                       <p className="font-semibold text-[#624d41]">{organization.address}</p>
                     </div>
                   )}
                   {organization.contactDetails && (
-                    <div>
+                    <div className="text-left">
                       <p className="text-sm text-gray-600">Contact</p>
                       <p className="font-semibold text-[#624d41]">{organization.contactDetails}</p>
                     </div>
@@ -277,22 +271,24 @@ const Donation = () => {
               </div>
             )}
 
-            {/* SAVE CAMPAIGN BUTTON */}
-            <button
-              onClick={() => setIsSaved(!isSaved)}
-              className={`w-full py-3 px-4 rounded-lg font-semibold transition-colors duration-200 flex items-center justify-center gap-2 ${isSaved
-                  ? 'bg-red-100 text-[#a50805] border-2 border-[#a50805]'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-            >
-              <svg className={`w-5 h-5 ${isSaved ? 'fill-current' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 5a2 2 0 012-2h6a2 2 0 012 2v12a2 2 0 01-2 2H7a2 2 0 01-2-2V5z"></path>
-              </svg>
-              {isSaved ? 'Saved' : 'Save Campaign'}
-            </button>
-
           </div>
 
+        </div>
+
+        {/* ABOUT CARD - FULL WIDTH */}
+        <div className="bg-white p-6 rounded-xl shadow-md border border-[#e9ecef] mb-8">
+          <h2 className="text-2xl font-bold text-[#624d41] mb-4">About This Campaign</h2>
+          <p className="text-gray-700 whitespace-pre-line">
+            {displayedDescription || 'No description available'}
+          </p>
+          {isTruncated && (
+            <button
+              onClick={() => setShowFullDescription(prev => !prev)}
+              className="mt-3 text-sm font-semibold text-[#a50805] hover:underline"
+            >
+              {showFullDescription ? 'Show less' : 'See more'}
+            </button>
+          )}
         </div>
 
       </SidebarLayout>

@@ -12,7 +12,7 @@ import ActivityFeed from './ActivityFeed';
 import OrgCard from '../GlobalOrganizationPage/OrgCard';
 import { getAllOrganizations } from '../services/organizationService';
 import { getCampaignsByOrganization } from '../services/campaignService';
-import { getUserDonationSummary, getUserActiveCampaigns } from '../services/donationService';
+import { getUserDonationSummary } from '../services/donationService';
 
 const Homepage = () => {
   const navigate = useNavigate();
@@ -21,6 +21,7 @@ const Homepage = () => {
   const [donateModal, setDonateModal] = useState({ isOpen: false, campaignId: null, campaignTitle: '' });
   const [featuredOrgs, setFeaturedOrgs] = useState([]);
   const [loadingOrgs, setLoadingOrgs] = useState(true);
+  const [recentActivities, setRecentActivities] = useState([]);
   const [userStats, setUserStats] = useState({
     totalDonations: 0,
     organizationsHelped: 0,
@@ -29,6 +30,66 @@ const Homepage = () => {
 
   // Fetch campaigns for featured drives
   const { campaigns, loading, error, refetch } = useCampaigns();
+
+  // Helper function to format time difference
+  const formatTimeAgo = (dateString) => {
+    if (!dateString) return 'Unknown time';
+
+    const date = new Date(dateString);
+    if (Number.isNaN(date.getTime())) {
+      return 'Unknown time';
+    }
+
+    const now = new Date();
+    const seconds = Math.floor((now - date) / 1000);
+
+    if (seconds < 0) return 'Just now';
+    if (seconds < 60) return 'Just now';
+    if (seconds < 3600) {
+      const mins = Math.floor(seconds / 60);
+      return mins === 1 ? '1 min ago' : `${mins} mins ago`;
+    }
+    if (seconds < 86400) {
+      const hours = Math.floor(seconds / 3600);
+      return hours === 1 ? '1 hour ago' : `${hours} hours ago`;
+    }
+    if (seconds < 604800) {
+      const days = Math.floor(seconds / 86400);
+      return days === 1 ? '1 day ago' : `${days} days ago`;
+    }
+    if (seconds < 2592000) {
+      const weeks = Math.floor(seconds / 604800);
+      return weeks === 1 ? '1 week ago' : `${weeks} weeks ago`;
+    }
+    const months = Math.floor(seconds / 2592000);
+    return months === 1 ? '1 month ago' : `${months} months ago`;
+  };
+
+  // Helper function to format donation activity
+  const formatDonationActivity = (donation) => {
+    let campaignName = 'Unknown Campaign';
+
+    if (donation.campaign) {
+      campaignName = donation.campaign.name || donation.campaign.campaignName || 'Unknown Campaign';
+    } else if (donation.campaignName) {
+      campaignName = donation.campaignName;
+    } else if (donation.campaign_name) {
+      campaignName = donation.campaign_name;
+    }
+
+    const amount = donation.amount || 0;
+    const timestamp = donation.date || donation.createdAt || donation.donationDate;
+
+    return {
+      icon: <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+      </svg>,
+      title: `Donated ₱${amount.toLocaleString('en-PH')} to ${campaignName}`,
+      time: formatTimeAgo(timestamp),
+      status: 'Completed',
+      statusColor: 'bg-[#4caf50]'
+    };
+  };
 
   // Load featured organizations
   useEffect(() => {
@@ -104,14 +165,20 @@ const Homepage = () => {
 
           // Fetch donation summary
           const donationSummary = await getUserDonationSummary(userId);
-          
-          // Fetch active campaigns
-          const activeCampaigns = await getUserActiveCampaigns(userId);
+
+          // Count unique campaigns the user donated to (regardless of status)
+          const uniqueCampaigns = new Set();
+          donationSummary.donations?.forEach((donation) => {
+            const campaignId = donation?.campaign?.campaignID;
+            if (campaignId) {
+              uniqueCampaigns.add(campaignId);
+            }
+          });
 
           setUserStats({
             totalDonations: donationSummary.totalDonations || 0,
             organizationsHelped: donationSummary.organizationsHelped || 0,
-            activeDrives: activeCampaigns.length || 0
+            activeDrives: uniqueCampaigns.size || 0
           });
         } catch (error) {
           console.error('Error loading user stats:', error);
@@ -152,40 +219,66 @@ const Homepage = () => {
   };
 
   const handleDonationSuccess = () => {
-    // Refresh campaigns to show updated data if donation was successful
+    // Refresh campaigns and activities to show updated data
     refetch();
+
+    // Re-fetch user activities
+    if (user) {
+      const userId = user.userID || user.id;
+      if (userId) {
+        getUserDonationSummary(userId).then(donationSummary => {
+          const recentDonations = donationSummary.donations
+            ?.sort((a, b) => {
+              const dateA = new Date(a.date || a.createdAt || 0).getTime();
+              const dateB = new Date(b.date || b.createdAt || 0).getTime();
+              return dateB - dateA;
+            })
+            .slice(0, 3)
+            .map(formatDonationActivity) || [];
+          setRecentActivities(recentDonations);
+        }).catch(error => {
+          console.error('Error refreshing activities:', error);
+        });
+      }
+    }
+
     setDonateModal({ isOpen: false, campaignId: null, campaignTitle: '' });
   };
 
-  const recentActivities = [
-    {
-      icon: <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
-      </svg>,
-      title: 'Donated ₱500 to Fire Relief Drive',
-      time: '2 days ago',
-      status: 'Completed',
-      statusColor: 'bg-[#4caf50]'
-    },
-    {
-      icon: <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-      </svg>,
-      title: 'Joined Community Support Initiative',
-      time: '1 week ago',
-      status: 'Active',
-      statusColor: 'bg-[#a50805]'
-    },
-    {
-      icon: <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"></path>
-      </svg>,
-      title: 'Shared donation drive on social media',
-      time: '2 weeks ago',
-      status: 'Completed',
-      statusColor: 'bg-[#4caf50]'
-    }
-  ];
+  // Load user recent activities
+  useEffect(() => {
+    const loadRecentActivities = async () => {
+      if (user) {
+        try {
+          const userId = user.userID || user.id;
+          if (!userId) {
+            console.warn('User ID not found');
+            return;
+          }
+
+          // Fetch donation summary
+          const donationSummary = await getUserDonationSummary(userId);
+
+          // Format recent donations as activities (get latest 3)
+          const recentDonations = donationSummary.donations
+            ?.sort((a, b) => {
+              const dateA = new Date(a.date || a.createdAt || 0).getTime();
+              const dateB = new Date(b.date || b.createdAt || 0).getTime();
+              return dateB - dateA;
+            })
+            .slice(0, 3)
+            .map(formatDonationActivity) || [];
+
+          setRecentActivities(recentDonations);
+        } catch (error) {
+          console.error('Error loading recent activities:', error);
+          setRecentActivities([]);
+        }
+      }
+    };
+
+    loadRecentActivities();
+  }, [user]);
 
   return (
     <>
@@ -207,7 +300,7 @@ const Homepage = () => {
             }
           />
           <UserStatsCard
-            title="Organizations Helped"
+            title="Orgs Helped"
             value={userStats.organizationsHelped || '0'}
             subtitle="Through your support"
             icon={
@@ -217,7 +310,7 @@ const Homepage = () => {
             }
           />
           <UserStatsCard
-            title="Active Drives"
+            title="Active Campaigns"
             value={userStats.activeDrives || '0'}
             subtitle="Currently supporting"
             icon={

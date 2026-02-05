@@ -162,18 +162,46 @@ export const getUserDonationSummary = async (userId) => {
   try {
     const donations = await getDonationsByUser(userId);
     const donationList = Array.isArray(donations) ? donations : donations.data || [];
-    
+
     // Calculate total donated amount
     const totalAmount = donationList.reduce((sum, donation) => sum + (donation.amount || 0), 0);
-    
-    // Get unique organizations
+
+    // Get unique organizations from campaigns
     const uniqueOrganizations = new Set();
     donationList.forEach(donation => {
-      if (donation.campaign && donation.campaign.organization) {
-        uniqueOrganizations.add(donation.campaign.organization.organizationID);
+      // Try to get organization ID from different possible locations
+      let orgId = null;
+
+      if (donation.campaign) {
+        // Check if organization is nested in campaign
+        if (donation.campaign.organization && donation.campaign.organization.organizationID) {
+          orgId = donation.campaign.organization.organizationID;
+        }
+        // Check if organizationID is directly on campaign
+        else if (donation.campaign.organizationID) {
+          orgId = donation.campaign.organizationID;
+        }
+        // Check if organization_id exists (snake_case)
+        else if (donation.campaign.organization_id) {
+          orgId = donation.campaign.organization_id;
+        }
+      }
+
+      // Check if organizationID is at the donation level
+      if (!orgId && donation.organizationID) {
+        orgId = donation.organizationID;
+      }
+
+      // Check if organization_id is at the donation level (snake_case)
+      if (!orgId && donation.organization_id) {
+        orgId = donation.organization_id;
+      }
+
+      if (orgId) {
+        uniqueOrganizations.add(orgId);
       }
     });
-    
+
     return {
       totalDonations: totalAmount,
       organizationsHelped: uniqueOrganizations.size,
@@ -201,7 +229,7 @@ export const getUserActiveCampaigns = async (userId) => {
   try {
     const donations = await getDonationsByUser(userId);
     const donationList = Array.isArray(donations) ? donations : donations.data || [];
-    
+
     // Get unique active campaigns
     const activeCampaigns = new Map();
     donationList.forEach(donation => {
@@ -209,7 +237,7 @@ export const getUserActiveCampaigns = async (userId) => {
         activeCampaigns.set(donation.campaign.campaignID, donation.campaign);
       }
     });
-    
+
     return Array.from(activeCampaigns.values());
   } catch (error) {
     console.error('Get user active campaigns error:', error);
