@@ -24,6 +24,8 @@ const OrganizationPageDonor = () => {
 
     useEffect(() => {
         loadOrganizationDetails();
+        // loadOrganizationDetails is defined below
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [orgId]);
 
     const loadOrganizationDetails = async () => {
@@ -53,7 +55,7 @@ const OrganizationPageDonor = () => {
                 id: orgData.organizationID,
                 name: orgData.name,
                 description: orgData.description || 'No description available',
-                location: orgData.address || 'Location not specified',
+                location: orgData.address || orgData.location || 'Location not specified',
                 contactDetails: orgData.contactDetails,
                 activeCampaigns: campaignsData.length,
                 totalRaised: totalRaisedAmount > 0 ? totalRaisedAmount : orgData.totalRaised || 0,

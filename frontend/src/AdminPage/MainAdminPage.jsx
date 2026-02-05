@@ -10,7 +10,7 @@ import Settings from './Settings';
 
 const MainAdminPage = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  useAuth();
   const [activeSection, setActiveSection] = useState('dashboard');
 
   const handleNav = (name) => {
@@ -97,7 +97,7 @@ const MainAdminPage = () => {
       <TopNavbar user={user} />
       <div className="min-h-screen bg-white flex">
         {/* Admin Sidebar */}
-        <div className="w-64 bg-gradient-to-b from-[#f8f9fa] to-white border-r border-[#e9ecef] shadow-lg">
+        <div className="w-64 bg-gradient-to-b from-[#f8f9fa] to-white border-r border-[#e9ecef] shadow-lg sticky top-0 h-screen overflow-y-auto">
           <div className="p-6">
             <h2 className="text-xl font-bold text-[#624d41] mb-6">Admin Panel</h2>
             <nav className="space-y-2">
@@ -112,8 +112,8 @@ const MainAdminPage = () => {
                     }
                   }}
                   className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 ${activeSection === item.id
-                      ? 'bg-[#a50805] text-white shadow-md'
-                      : 'text-[#624d41] hover:bg-[#f8f9fa] hover:shadow-sm'
+                    ? 'bg-[#a50805] text-white shadow-md'
+                    : 'text-[#624d41] hover:bg-[#f8f9fa] hover:shadow-sm'
                     }`}
                 >
                   <div className="flex-shrink-0">

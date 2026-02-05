@@ -105,7 +105,7 @@ const Login = ({ onClose, onSwitchToRegister, onLogin }) => {
           </button>
 
           <div className="form-footer">
-            <p>Don't have an account? <a href="#" onClick={(e) => { e.preventDefault(); onSwitchToRegister(); }}>Sign Up</a></p>
+            <p>Don't have an account? <a href="#signup" onClick={(e) => { e.preventDefault(); onSwitchToRegister(); }}>Sign Up</a></p>
           </div>
         </form>
       </div>

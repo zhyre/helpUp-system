@@ -19,7 +19,7 @@ import './App.css';
 
 function AppContent() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  useAuth();
 
   const handleLogin = (loggedInUser) => {
     if (loggedInUser && loggedInUser.email === 'admin@gmail.com') {

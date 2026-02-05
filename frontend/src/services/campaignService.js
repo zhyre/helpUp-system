@@ -89,7 +89,7 @@ export const deleteCampaign = async (id) => {
   }
 };
 
-export default {
+const campaignService = {
   getAllCampaigns,
   getCampaignById,
   getCampaignsByOrganization,
@@ -97,3 +97,5 @@ export default {
   updateCampaign,
   deleteCampaign,
 };
+
+export default campaignService;

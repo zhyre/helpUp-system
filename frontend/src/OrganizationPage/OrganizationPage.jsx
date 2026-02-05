@@ -16,7 +16,8 @@ const OrganizationPage = () => {
   const { user } = useAuth();
   const [activeSection, setActiveSection] = useState('dashboard');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedCampaign, setSelectedCampaign] = useState(null);
+  // selectedCampaign can be used for future campaign details view
+  // const [selectedCampaign, setSelectedCampaign] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [sortBy, setSortBy] = useState('newest');
@@ -246,7 +247,8 @@ const OrganizationPage = () => {
     },
   ];
 
-  const renderAnalytics = () => (
+  // renderAnalytics can be used for future dashboard expansion
+  // const renderAnalytics = () => (
     <div className="space-y-8">
       {/* Header with Controls */}
       <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-6">
@@ -332,7 +334,8 @@ const OrganizationPage = () => {
     </div>
   );
 
-  const renderSettings = () => (
+  // renderSettings can be used for future settings page
+  // const renderSettings = () => (
     <div className="space-y-8">
       <h1 className="text-4xl font-bold text-[#624d41] mb-8">Organization Settings</h1>
 
@@ -437,7 +440,7 @@ const OrganizationPage = () => {
       <TopNavbar user={user} />
       <div className="min-h-screen bg-white flex">
         {/* Organization Sidebar */}
-        <div className="w-64 bg-gradient-to-b from-[#f8f9fa] to-white border-r border-[#e9ecef] shadow-lg">
+        <div className="w-64 bg-gradient-to-b from-[#f8f9fa] to-white border-r border-[#e9ecef] shadow-lg sticky top-0 h-screen overflow-y-auto">
           <div className="p-6">
             <h2 className="text-xl font-bold text-[#624d41] mb-6">Organization Panel</h2>
             <nav className="space-y-2">

@@ -152,7 +152,7 @@ export const isOrganization = (user) => {
   return user.role === 'ORGANIZATION';
 };
 
-export default {
+const authService = {
   login,
   register,
   logout,
@@ -163,3 +163,5 @@ export default {
   isAdmin,
   isOrganization,
 };
+
+export default authService;

@@ -80,10 +80,12 @@ export const processDonation = async (donationData) => {
   }
 };
 
-export default {
+const walletService = {
   getWalletBalance,
   processTopUp,
   checkBalance,
   getWalletTransactions,
   processDonation,
 };
+
+export default walletService;

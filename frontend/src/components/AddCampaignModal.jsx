@@ -25,6 +25,7 @@ const AddCampaignModal = ({ isOpen, onClose, onSave }) => {
     if (!formData.startDate) {
       setFormData(prev => ({ ...prev, startDate: today }));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
   const validateForm = () => {
@@ -156,6 +157,7 @@ const AddCampaignModal = ({ isOpen, onClose, onSave }) => {
       document.addEventListener('keydown', handleKeyDown);
       return () => document.removeEventListener('keydown', handleKeyDown);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
   if (!isOpen) return null;

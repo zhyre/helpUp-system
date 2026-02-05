@@ -36,6 +36,7 @@ export const useCampaigns = ({ autoFetch = true, onError } = {}) => {
     if (autoFetch) {
       fetchCampaigns();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoFetch]);
 
   return {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext.jsx';
-import { getUserProfile } from '../services/authService.js';
+import { getUserProfile, updateUserProfile } from '../services/authService.js';
 import { getUserDonationSummary } from '../services/donationService.js';
 import TopNavbar from "../components/TopNavbar.jsx";
 import SidebarLayout from "../components/SidebarLayout.jsx";
@@ -110,9 +110,15 @@ const ProfilePage = () => {
 
   const handleSaveChanges = async () => {
     try {
-      // Here you can add API call to update user profile
-      // await updateUserProfile(editedUser);
-      setUser(editedUser);
+      const userId = authUser?.userID || authUser?.id;
+      if (!userId) {
+        setError('User ID not found');
+        return;
+      }
+
+      // Call API to update user profile
+      const updatedUser = await updateUserProfile(userId, editedUser);
+      setUser(updatedUser);
       setIsEditing(false);
       setEditedUser(null);
       // Show success message

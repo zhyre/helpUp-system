@@ -99,10 +99,12 @@ export const patch = (endpoint, data, options = {}) => {
   });
 };
 
-export default {
+const apiService = {
   get,
   post,
   put,
   delete: del,
   patch,
 };
+
+export default apiService;
