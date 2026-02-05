@@ -10,7 +10,7 @@ import Settings from './Settings';
 
 const MainAdminPage = () => {
   const navigate = useNavigate();
-  useAuth();
+  const { user } = useAuth();
   const [activeSection, setActiveSection] = useState('dashboard');
 
   const handleNav = (name) => {

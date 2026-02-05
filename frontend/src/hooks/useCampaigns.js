@@ -16,7 +16,7 @@ export const useCampaigns = ({ autoFetch = true, onError } = {}) => {
   const fetchCampaigns = async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const data = await getAllCampaigns();
       setCampaigns(data);
@@ -58,7 +58,7 @@ export const transformCampaignForCard = (campaign) => {
   const description = campaign.description || 'No description available';
   const targetAmount = campaign.targetAmount || 0;
   const totalRaised = campaign.totalRaised || 0;
-  
+
   // Format target amount as currency
   const formattedAmount = `₱${targetAmount.toLocaleString('en-PH', {
     minimumFractionDigits: 0,
@@ -91,7 +91,7 @@ const getCampaignImage = (campaign) => {
   const name = campaign.name?.toLowerCase() || '';
   const description = campaign.description?.toLowerCase() || '';
   const content = `${name} ${description}`;
-  
+
   // Determine image based on campaign type
   if (content.includes('fire') || content.includes('burn')) {
     return '/images/fireimage.jpg';
@@ -102,7 +102,7 @@ const getCampaignImage = (campaign) => {
   } else if (content.includes('community') || content.includes('support')) {
     return '/images/bagyo_tino2.jpg';
   }
-  
+
   // Default fallback image
   return '/images/fireimage.jpg';
 };

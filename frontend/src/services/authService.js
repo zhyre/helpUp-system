@@ -14,17 +14,17 @@ import { get, post, put } from './api';
 export const login = async (email, password) => {
   try {
     const response = await post('/users/login', { email, password });
-    
+
     // Store token if provided
     if (response.token) {
       localStorage.setItem('authToken', response.token);
     }
-    
+
     // Store user data
     if (response.user) {
       localStorage.setItem('user', JSON.stringify(response.user));
     }
-    
+
     return response;
   } catch (error) {
     console.error('Login error:', error);
@@ -55,11 +55,11 @@ export const logout = async () => {
   try {
     // Optional: Call backend logout endpoint if needed
     // await post('/users/logout');
-    
+
     // Clear local storage
     localStorage.removeItem('authToken');
     localStorage.removeItem('user');
-    
+
     return { success: true };
   } catch (error) {
     console.error('Logout error:', error);
@@ -118,13 +118,13 @@ export const getUserProfile = async (userId) => {
 export const updateUserProfile = async (userId, userData) => {
   try {
     const response = await put(`/users/${userId}`, userData);
-    
+
     // Update stored user data if it's the current user
     const currentUser = getCurrentUser();
     if (currentUser && (currentUser.userID === userId || currentUser.id === userId)) {
       localStorage.setItem('user', JSON.stringify(response));
     }
-    
+
     return response;
   } catch (error) {
     console.error('Update user profile error:', error);
