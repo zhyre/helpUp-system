@@ -13,14 +13,6 @@ const MainAdminPage = () => {
   const { user } = useAuth();
   const [activeSection, setActiveSection] = useState('dashboard');
 
-  const handleNav = (name) => {
-    if (name === 'Home') navigate('/homepage');
-    if (name === 'Donation') navigate('/global-donations');
-    if (name === 'Top Up') navigate('/top-up');
-    if (name === 'Profile') navigate('/profile');
-    if (name === 'Settings') navigate('/settings');
-  };
-
 
   const adminNavItems = [
     {

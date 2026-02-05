@@ -80,38 +80,38 @@ const SettingsPage = () => {
     });
   };
 
-  // handleSelect function used for form control state management
-  // const handleSelect = (category, field, value, subfield = null) => {
-  setSettings(prev => {
-    if (subfield) {
-      return {
-        ...prev,
-        [category]: {
-          ...prev[category],
-          [field]: {
-            ...prev[category][field],
-            [subfield]: value
+  // eslint-disable-next-line no-unused-vars
+  const handleSelect = (category, field, value, subfield = null) => {
+    setSettings(prev => {
+      if (subfield) {
+        return {
+          ...prev,
+          [category]: {
+            ...prev[category],
+            [field]: {
+              ...prev[category][field],
+              [subfield]: value
+            }
           }
-        }
-      };
-    } else {
-      return {
-        ...prev,
-        [category]: {
-          ...prev[category],
-          [field]: value
-        }
-      };
-    }
-  });
-};
+        };
+      } else {
+        return {
+          ...prev,
+          [category]: {
+            ...prev[category],
+            [field]: value
+          }
+        };
+      }
+    });
+  };
 
-const handleSave = () => {
-  // Mock save functionality
-  alert('Settings saved successfully!');
-};
+  const handleSave = () => {
+    // Mock save functionality
+    alert('Settings saved successfully!');
+  };
 
-return (
+  return (
   <>
     <TopNavbar user={{ firstName: 'John', lastName: 'Doe' }} />
     <SidebarLayout activeSection={activeSection} onNavigate={handleNav}>

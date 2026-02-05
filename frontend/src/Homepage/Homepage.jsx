@@ -16,7 +16,7 @@ import { getUserDonationSummary } from '../services/donationService';
 
 const Homepage = () => {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const [activeSection, setActiveSection] = useState('Home');
   const [donateModal, setDonateModal] = useState({ isOpen: false, campaignId: null, campaignTitle: '' });
   const [featuredOrgs, setFeaturedOrgs] = useState([]);
