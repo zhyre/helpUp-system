@@ -16,8 +16,7 @@ import { getUserDonationSummary } from '../services/donationService';
 
 const Homepage = () => {
   const navigate = useNavigate();
-  // eslint-disable-next-line no-unused-vars
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const [activeSection, setActiveSection] = useState('Home');
   const [donateModal, setDonateModal] = useState({ isOpen: false, campaignId: null, campaignTitle: '' });
   const [featuredOrgs, setFeaturedOrgs] = useState([]);
