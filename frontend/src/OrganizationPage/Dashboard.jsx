@@ -67,6 +67,7 @@ const Dashboard = ({ organization, campaigns, onCreateCampaign, onViewAnalytics 
   const totalFundsRaised = campaigns.reduce((sum, campaign) => sum + (campaign.raised || 0), 0);
 
   // Calculate average donation (prevent division by zero)
+  // eslint-disable-next-line no-unused-vars
   const totalDonorsEstimate = campaigns.reduce((acc, campaign) => {
     const raised = campaign.raised || 0;
     return acc + (raised > 0 ? Math.max(Math.floor(raised / 100), 1) : 0);
