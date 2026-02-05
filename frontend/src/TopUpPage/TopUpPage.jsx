@@ -16,12 +16,6 @@ const TopUpPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    if (user && user.userID) {
-      fetchWalletData();
-    }
-  }, [user, fetchWalletData]);
-
   const fetchWalletData = async () => {
     try {
       setLoading(true);
@@ -48,6 +42,14 @@ const TopUpPage = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  useEffect(() => {
+    if (user && user.userID) {
+      fetchWalletData();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
   };
 
   const handleNav = (name) => {
@@ -175,11 +177,10 @@ const TopUpPage = () => {
                       <td className="px-6 py-4 text-gray-800 font-medium">₱{item.amount}</td>
                       <td className="px-6 py-4">
                         <span
-                          className={`px-3 py-1 rounded-full text-sm font-medium ${
-                            item.status === 'Completed'
+                          className={`px-3 py-1 rounded-full text-sm font-medium ${item.status === 'Completed'
                               ? 'bg-green-100 text-green-800'
                               : 'bg-red-100 text-red-800'
-                          }`}
+                            }`}
                         >
                           {item.status}
                         </span>

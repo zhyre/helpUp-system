@@ -13,7 +13,7 @@ const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api
  */
 export const apiRequest = async (endpoint, options = {}) => {
   const url = `${API_BASE_URL}${endpoint}`;
-  
+
   const defaultHeaders = {
     'Content-Type': 'application/json',
   };
@@ -34,11 +34,11 @@ export const apiRequest = async (endpoint, options = {}) => {
 
   try {
     const response = await fetch(url, config);
-    
+
     // Handle non-JSON responses
     const contentType = response.headers.get('content-type');
     const isJson = contentType?.includes('application/json');
-    
+
     const data = isJson ? await response.json() : await response.text();
 
     if (!response.ok) {

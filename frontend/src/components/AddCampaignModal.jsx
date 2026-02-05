@@ -55,7 +55,7 @@ const AddCampaignModal = ({ isOpen, onClose, onSave }) => {
       const selectedDate = new Date(formData.endDate);
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      
+
       if (selectedDate < today) {
         newErrors.endDate = 'End date must be in the future';
       }
@@ -219,11 +219,10 @@ const AddCampaignModal = ({ isOpen, onClose, onSave }) => {
                 value={formData.name}
                 onChange={handleChange}
                 placeholder="Enter campaign name"
-                className={`w-full pl-10 pr-4 py-3 border rounded-lg transition-all duration-200 ${
-                  errors.name
+                className={`w-full pl-10 pr-4 py-3 border rounded-lg transition-all duration-200 ${errors.name
                     ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
                     : 'border-[#e9ecef] focus:ring-[#a50805] focus:border-[#a50805]'
-                } focus:outline-none focus:ring-2`}
+                  } focus:outline-none focus:ring-2`}
                 required
                 disabled={isSubmitting}
               />
@@ -255,11 +254,10 @@ const AddCampaignModal = ({ isOpen, onClose, onSave }) => {
                 onChange={handleChange}
                 placeholder="Describe the campaign purpose and goals"
                 rows="3"
-                className={`w-full pl-10 pr-4 py-3 border rounded-lg transition-all duration-200 resize-none ${
-                  errors.description
+                className={`w-full pl-10 pr-4 py-3 border rounded-lg transition-all duration-200 resize-none ${errors.description
                     ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
                     : 'border-[#e9ecef] focus:ring-[#a50805] focus:border-[#a50805]'
-                } focus:outline-none focus:ring-2`}
+                  } focus:outline-none focus:ring-2`}
                 disabled={isSubmitting}
               />
             </div>
@@ -290,11 +288,10 @@ const AddCampaignModal = ({ isOpen, onClose, onSave }) => {
                 value={formData.targetAmount}
                 onChange={handleChange}
                 placeholder="50000"
-                className={`w-full pl-10 pr-4 py-3 border rounded-lg transition-all duration-200 ${
-                  errors.targetAmount
+                className={`w-full pl-10 pr-4 py-3 border rounded-lg transition-all duration-200 ${errors.targetAmount
                     ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
                     : 'border-[#e9ecef] focus:ring-[#a50805] focus:border-[#a50805]'
-                } focus:outline-none focus:ring-2`}
+                  } focus:outline-none focus:ring-2`}
                 required
                 disabled={isSubmitting}
                 min="1"
@@ -328,11 +325,10 @@ const AddCampaignModal = ({ isOpen, onClose, onSave }) => {
                   value={formData.startDate}
                   onChange={handleChange}
                   min={new Date().toISOString().split('T')[0]}
-                  className={`w-full pl-10 pr-4 py-3 border rounded-lg transition-all duration-200 ${
-                    errors.startDate
+                  className={`w-full pl-10 pr-4 py-3 border rounded-lg transition-all duration-200 ${errors.startDate
                       ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
                       : 'border-[#e9ecef] focus:ring-[#a50805] focus:border-[#a50805]'
-                  } focus:outline-none focus:ring-2`}
+                    } focus:outline-none focus:ring-2`}
                   disabled={isSubmitting}
                 />
               </div>
@@ -363,11 +359,10 @@ const AddCampaignModal = ({ isOpen, onClose, onSave }) => {
                   value={formData.endDate}
                   onChange={handleChange}
                   min={formData.startDate || new Date().toISOString().split('T')[0]}
-                  className={`w-full pl-10 pr-4 py-3 border rounded-lg transition-all duration-200 ${
-                    errors.endDate
+                  className={`w-full pl-10 pr-4 py-3 border rounded-lg transition-all duration-200 ${errors.endDate
                       ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
                       : 'border-[#e9ecef] focus:ring-[#a50805] focus:border-[#a50805]'
-                  } focus:outline-none focus:ring-2`}
+                    } focus:outline-none focus:ring-2`}
                   disabled={isSubmitting}
                 />
               </div>
